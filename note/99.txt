@@ -1,0 +1,67 @@
+## 概要
+
+CausalGAN [Kocaoglu, 2018]の拡張, Causal Fairness-aware GAN(CFGAN)を提案. 与えられた因果関係グラフに基づいて様々な因果関係の公平性を確保しながら分布を学習できる.
+
+## 2. Preliminaly
+
+#### 因果モデル
+causal model [Pearl, 2009]とは次のような三つ組みM={U, V, F}
+- U: 観測不可能な確率変数の集合. Vのあらゆる変数に起因しない潜在変数.
+- V: 観測可能な確率変数の集合.
+- F: 共分散構造の集合.
+
+#### 因果ベースの公平性
+それぞれに特化したCFGANを設計できる.
+- total effect
+- direct discrimination
+- indirect dicrimination
+- counterfactual fairness
+
+## 3. CFGAN
+
+### 3.1 Problem Statement
+- 変数
+  - V = {X, Y, S}
+    - S: センシティブ属性
+    - Y: 決定変数
+    - X: S以外の属性集合
+  - causal graph G = (V, E)
+  - データセットはm点のサンプル(x, y, s)
+  - サンプル(x, y, s)はP_data(=P(V))からサンプルされる.
+- CFGANのゴール
+  - read dataの全ての属性の分布を保護した新しいデータ(x^, y^, s^)を生成する.
+  - 様々なcausalベースの基準において, 生成されたデータS^がY^に差別的な影響を与えない.
+
+### 3.2 Model Framework
+CFGANは以下を持っている.
+  - 2つのgenerator (G1, G2)
+  - 2つのdiscriminator (D1, D2)
+- Generator
+- G1
+  - 元の因果モデルMの役割 (CausalGANと同じ.)
+  - 目的: read dataの分布に近づけたい.
+- G2
+  - 介入モデルM_sの役割
+  - 目的: 公平性を満たした介入データを生成したい.
+- G1とG2で共有しているもの
+  - 入力ノイズ
+  - 因果モデル間の接続を表すパラメータ
+- G1とG2で異なるもの
+  - 介入を表すサブニューラルネットのコネクション
+- Discriminator
+  - D1
+- read dataかgenerated dataかを見分ける.
+- D2
+  - 介入do(S=1)の分布なのか, 介入do(S=0)の分布なのかを見分ける.
+  - もともとnegなsならばdo(S=0)は普通のy^なので, これを予測に用いる.
+
+![99_01](https://github.com/wataoka/papersheet2md/blob/main/images/99_01.png?raw=true)
+
+## CFGAN for Counterfactual Fairness
+
+- オリジナルの因果モデルと介入因果モデルとのコネクションを考慮する必要がある.
+- このコネクションを反映するために,  G1によって生成されたサンプルとG2によって生成されたサンプルの直接的依存関係を構築する.
+- G1とG2の構造は上と同じだが, 各ノイズzにおいて最初にG1を使用して観測サンプルを生成し, そのサンプルがデータセットにあるかどうかを確認する.
+- ある場合にのみ, そのノイズをG2に入力し, 介入サンプルを生成する.
+- D2がそれを見抜こうとするので,
+- 最終的にP(Y_{S←1}|O)=P(Y_{S←0}|O)が達成される.

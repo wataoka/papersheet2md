@@ -1,0 +1,35 @@
+## 概要
+fairnessの評価指標はだいたい予測, センシティブ属性, アウトカムに依存したjoint distributionにのみ依存している.
+
+因果推論の視点は「正しい公平性の指標は何か」から「因果データ生成プロセスにどんなモデルを仮定するか？」にシフトさせる.
+
+因果推論によって下の3つのContributionをした.
+- なぜ, そしてどんな時に指標が失敗するのかを明確に述べ, その問題を定式化した.
+- 今まで無視されてきた微妙なことを明らかにし, それが根本的な問題であることを示した.
+- 差別を回避するための因果基準の公平性を定義し, それらを満たすアルゴリズムを提案する.
+
+## 2. Unresolved discrimination and limitations of observational criterion
+resolving variable: 差別的な影響をAから受けていない変数
+unresolving variable: 差別的な影響をAから受けている変数
+
+#### Definition 1. (Unresolved Discrimination)
+次の2つを満たす時, 因果グラフにおける変数Vは未解決の差別という.
+- resolving変数によってブロックされていないAからVへのダイレクトパスが存在する.
+- V自身がnon-resolving変数.
+
+
+#### Theorem 1.
+resolving variableを特定できているセンシティブ属性A, ラベルY, 特徴X1,...,Xnのjoint distributionが与えられた時,
+ベイズ最適な制約なし分類器もしくはベイズ最適なequal oddsを満たした分類器がunsolved discriminationを示すかどうかを決定できる評価指標は存在しない.
+
+
+## 3. Proxy discrimination and interventions
+Definition 2. (Potential proxy discrimination)
+次を満たす時, 因果グラフにおける変数Vはpotential proxy discriminationを示す.
+- proxyからブロックされないAからVへのダイレクトパスが存在する.
+- V自身がproxyではない.
+
+#### definition 3. (Proxy discrimination)
+次を満たす時, 識別器Rはproxy Pに基づくProxy discriminationではないことを示す.
+- 全てのp, p’について
+  - P(R|do(P=p)) = P(R|do(P=p’))
