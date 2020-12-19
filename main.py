@@ -80,6 +80,7 @@ def main(filename='output.md'):
                 print(f'\n### wataokaのコメント', file=f)
                 print(f'{comment}', file=f)
             row += 1
+    print('Done!')
 
 
 if __name__ == "__main__":
