@@ -41,6 +41,8 @@ def check_note(row):
 
 def main(filename='output.md'):
 
+    count = 1
+
     print('loading google sheet...')
     sheet = get_sheet(SHEETS_NAME)
     sheet_df = pd.DataFrame(sheet.get_all_records())
@@ -66,7 +68,7 @@ def main(filename='output.md'):
             date     = row_df['投稿日付'].values[0]
 
             assert not title_en == ''
-            print(f'## {title_en}\n', file=f)
+            print(f'## {count}本目の論文: {title_en}\n', file=f); count+=1
             if not title_ja == '':
                 print(f'wataokaの日本語訳「{title_ja}」', file=f)
             if not tag == '':
@@ -111,7 +113,7 @@ def main(filename='output.md'):
             comment  = row_df['コメント'].values[0]
 
             assert not title_en == ''
-            print(f'## {title_en}\n', file=f)
+            print(f'## {count}本目の論文: {title_en}\n', file=f); count+=1
             if not title_ja == '':
                 print(f'wataokaの日本語訳「{title_ja}」', file=f)
             if not tag == '':
