@@ -1,0 +1,45 @@
+### 概要
+- 行動の視覚的因果の定義を提案する.
+- 行動の視覚的因果は人間, 動物, ニューロン, ロボット, その他の知覚システムにおける視覚的に駆動される行動に応用可能.
+- 提案フレームワークは因果変数がミクロ変数から構成されている必要があるような標準的な因果学習を一般化する.
+- Causal Coarsening(因果関係の粗大化)定理を証明した.
+- この定理により最小限の実験による観測データから因果知識を得ることができる.
+- この定理は標準的な因果推論のテクニックを画像特徴を識別する機械学習に接続する. (画像特徴はターゲットの行動を引き起こすわけではないがターゲットの行動と相関がある.)
+- 最終的にターゲットの行動の視覚的因果を自動的に特定するために画像におけるoptimal manipulationsを行うmanipulator関数を学習するためのactive learningスキームを提供する.
+- 人工データとreal dataで実験した.
+
+### 1. 導入
+Three advances
+画像空間を作るミクロ変数(pixels)から構成されるマクロ変数としてのターゲットの行動の視覚的因果を定義した. 視覚的因果は画像内にターゲットの行動に関する因果情報があるという点で他のマクロ変数と異なる.
+Causal Coarsening Theorem (CCT)を証明。CCTは最小限の実験的努力から視覚的因果を学習するために観測データをどのように使えるかを示してくれる.
+manipulator関数を学習する方法を示す. manipulator関数は自動的に視覚的因果においてoptimal manipulationsを実行してくれる.
+
+### 2. A Theory of visual causal features
+2.2 Generative Models: from micro to macro variables
+Definition 1 (Observational Partition, Observational Class)
+振る舞いTに関する集合Iのobservational partition Π_o(T, I) (⊂I)は,
+i~j <=> P(T|I=i)=P(T|I=j)
+という等価関係に基づく分割である.
+
+画像のobservational partitionを知ることはTの値を予測することになる.
+
+#### Definition2 (Visual Manipulation)
+visual manipulationは操作man(I=i)である. 
+
+
+#### Definition 3 (Causal Partition, Causall Class)
+振る舞いTに関する集合IのCausal partition Π_o(T, I) (⊂I)は,
+	i~j <=> P(T|man(I=i)) = P(T|man(I=j))
+という等価関係に基づく分割である.
+
+### スライド
+https://www.slideshare.net/KojinOshiba/visutl-causal-feature-learning
+
+目的: 人間の視覚的な因果を理解すること
+マクロ変数(e.g. ピクセルの集合)から因果学習するフレームワーク
+ミクロ変数(e.g. 聴覚や嗅覚データ)への応用可能
+
+C: macro-variable
+I: image 
+T: behavior
+H: discrete variable (Iを生成する)

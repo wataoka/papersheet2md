@@ -1,0 +1,22 @@
+### 概要
+- 潜在交絡因子が存在しないという仮定を取っ払ったLiNGAMを提案.
+- Key ideaは外生変数間の独立性をテストすることで潜在交絡因子を検知し, 潜在交絡因子によって影響を受けていない変数集合(parcels)を見つけるということ.
+- 人工データと脳画像データで実験を行った.
+
+xjと全てのiに対する残差r(j)iが独立である=xjはsource変数という性質とその逆を用いて, source変数とsink変数を排除していくアルゴリズムをベースとして, それが解けない状況にもrobustな改良もしている. 出力はcausal order matrix
+
+### 3 A method robust against latent confounders
+3.1 Identification of causal orders of variables that are not affected by latent confounders
+
+```math
+x = Bx + Λf + e (3)
+```
+
+#### Lemma 1
+式(3)における潜在変数LiNGAMの仮定を満たし, サンプル数が無限である時, 以下が同値.
+「全てのiに対してx_jと残差r(j)_iが独立」
+「x_jは親も潜在交絡因子も持たない外生変数」
+
+#### Lemma 2
+Lemma 1の逆. 全部と依存してたらsink変数だよ的な定理.
+

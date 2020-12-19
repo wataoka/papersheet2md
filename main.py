@@ -13,6 +13,7 @@ from constants import (
     SPREADSHEETS_NAME,
     SHEETS_NAME, 
     SCOPE,
+    NOTE_FILEID_LIST
 )
 
 
@@ -27,23 +28,36 @@ def get_sheet(sheet_name):
     return sheet
 
 
+def check_note(row):
+    # check note
+    if not str(row+2) in NOTE_FILEID_LIST:
+        return None
+    # read note
+    with open(f'note/{row+2}.txt', 'r') as f:
+        data = f.read()
+    return data
+
+
 def main(filename='output.md'):
 
     print('loading google sheet...')
     sheet = get_sheet(SHEETS_NAME)
     sheet_df = pd.DataFrame(sheet.get_all_records())
 
-    row = 62
+    row = 61
     print('writing markdown...')
     with open(filename, 'w') as f:
 
-        print('この記事は私, wataokaが一人で2020年の**1年間をかけて**作り続けた論文要約の**超大作記事**です.', file=f)
+        print('この記事は私, wataokaが一人で2020年の**1年間をかけて**作り続けた論文要約の**超大作記事**です.\n', file=f)
 
-        print('\n# 論文100本解説', file=f)
+        print('# 論文100本解説\n', file=f)
         while True:
+            row += 1
 
-            # get and check
+            # get row
             row_df = sheet_df[row:row+1]
+
+            # check end
             if len(row_df) == 0:
                 break
 
@@ -60,7 +74,7 @@ def main(filename='output.md'):
             comment  = row_df['コメント'].values[0]
 
             assert not title_en == ''
-            print(f'\n## {title_en}', file=f)
+            print(f'## {title_en}\n', file=f)
             if not title_ja == '':
                 print(f'wataokaの日本語訳「{title_ja}」', file=f)
             if not tag == '':
@@ -71,19 +85,26 @@ def main(filename='output.md'):
                 print(f'- 日付: {date}', file=f)
             if not url == '':
                 print(f'- URL: [{url}]({url})', file=f)
+            print('\n', file=f)
+
+            # check note
+            note = check_note(row)
+            if note is not None:
+                print(note, file=f)
+                continue
+
             if not abst == '':
-                print(f'\n### 概要', file=f)
-                print(f'{abst}', file=f)
+                print(f'### 概要\n', file=f)
+                print(f'{abst}\n', file=f)
             if not method == '':
-                print(f'\n### 手法', file=f)
-                print(f'{method}', file=f)
+                print(f'### 手法\n', file=f)
+                print(f'{method}\n', file=f)
             if not result == '':
-                print(f'\n### 結果', file=f)
-                print(f'{result}', file=f)
+                print(f'### 結果\n', file=f)
+                print(f'{result}\n', file=f)
             if not comment == '':
-                print(f'\n### wataokaのコメント', file=f)
-                print(f'{comment}', file=f)
-            row += 1
+                print(f'### wataokaのコメント\n', file=f)
+                print(f'{comment}\n', file=f)
     print('Done!')
 
 
