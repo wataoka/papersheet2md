@@ -1,3 +1,6 @@
+この記事は私, wataokaが一人で2020年の**1年間をかけて**作り続けた論文要約の**超大作記事**です.
+
+# 論文100本解説
 
 ## Disparate Interactions: An Algorithm-in-the-Loop Analysis of Fiarness in Risk Assessments
 wataokaの日本語訳「異なる相互作用: リスク評価に関するFairnessの分析ループ内のアルゴリズム」

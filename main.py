@@ -36,6 +36,10 @@ def main(filename='output.md'):
     row = 62
     print('writing markdown...')
     with open(filename, 'w') as f:
+
+        print('この記事は私, wataokaが一人で2020年の**1年間をかけて**作り続けた論文要約の**超大作記事**です.', file=f)
+
+        print('\n# 論文100本解説', file=f)
         while True:
 
             # get and check
