@@ -6,6 +6,7 @@ unsupervised editing. 背景削除の方向を見つけたらしい. sacliency d
 ![128_01](https://github.com/wataoka/papersheet2md/blob/main/images/128_01.png?raw=true)
 
 Figure2.
+
 - direction index kをone-hotでエンコード: e_k
 - e_kを[-ε, ε]の範囲のどれかの値でかける: ε*e_k (ε: shift magnitude)
 - その結果を行列Aにかける.

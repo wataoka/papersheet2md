@@ -45,13 +45,47 @@ def main(filename='output.md'):
     sheet = get_sheet(SHEETS_NAME)
     sheet_df = pd.DataFrame(sheet.get_all_records())
 
-    row = 61
     print('writing markdown...')
     with open(filename, 'w') as f:
 
         print('この記事は私, wataokaが一人で2020年の**1年間をかけて**作り続けた論文要約の**超大作記事**です.\n', file=f)
 
         print('# 論文100本解説\n', file=f)
+
+        # sheet + note
+        for id in NOTE_FILEID_LIST:
+            row = int(id)-2
+            row_df = sheet_df[row:row+1]
+
+            # set values
+            title_en = row_df['論文名'].values[0]
+            title_ja = row_df['論文名(日本語)'].values[0]
+            tag      = row_df['タグ'].values[0]
+            conf     = row_df['学会'].values[0]
+            url      = row_df['リンク'].values[0]
+            date     = row_df['投稿日付'].values[0]
+
+            assert not title_en == ''
+            print(f'## {title_en}\n', file=f)
+            if not title_ja == '':
+                print(f'wataokaの日本語訳「{title_ja}」', file=f)
+            if not tag == '':
+                print(f'- 種類: {tag}', file=f)
+            if not conf == '':
+                print(f'- 学会: {conf}', file=f)
+            if not date == '':
+                print(f'- 日付: {date}', file=f)
+            if not url == '':
+                print(f'- URL: [{url}]({url})', file=f)
+            print('\n', file=f)
+
+            # check note
+            note = check_note(row)
+            assert note is not None
+            print(note, file=f)
+
+        # only sheet
+        row = 61
         while True:
             row += 1
 
@@ -61,7 +95,7 @@ def main(filename='output.md'):
             if len(row_df) == 0:
                 break
             # check ignore
-            if row+2 in IGNORE_ID_LIST:
+            if str(row+2) in IGNORE_ID_LIST+NOTE_FILEID_LIST:
                 continue
 
             # set values
@@ -89,12 +123,6 @@ def main(filename='output.md'):
             if not url == '':
                 print(f'- URL: [{url}]({url})', file=f)
             print('\n', file=f)
-
-            # check note
-            note = check_note(row)
-            if note is not None:
-                print(note, file=f)
-                continue
 
             if not abst == '':
                 print(f'### 概要\n', file=f)
