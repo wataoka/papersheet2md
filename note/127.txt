@@ -1,0 +1,53 @@
+## 概要
+semi-supervised editing. 鳥とかきのことかを編集している. pixel-wiseな損失では高周波成分をうまく再構成できていないと怒っていた.
+
+## 2 LATENT SPACE DIRECTIONS OF A FACTOR OF VARIATION
+### 2.1 Latent Space Trajectories of an Image Transformation
+G: 潜在空間→画像空間
+Tt: 画像空間→画像空間 (parametrized by t)
+I = なんかの画像とした時,
+
+![127_01](https://github.com/wataoka/papersheet2md/blob/main/images/127_01.png?raw=true)
+
+となるような潜在ベクトルz^を見つけたい. 
+Encoderを学習すればできることだがそうはしない.
+三つ組(z0, zdt, dtn)のデータセットを作成→それを用いて
+
+このまま最適化すれば, 尤度の低い点に最適値を見つけてしまい, unrealisticな画像を生成してしまう危険がある. zは多次元ガウシアン分布に従うので, ノルムの期待値はsqrt(d)となる. (d: 潜在空間の次元) 従って, 下のように制限を加える.
+ 
+![127_02](https://github.com/wataoka/papersheet2md/blob/main/images/127_02.png?raw=true)
+↑
+式(2)
+
+#### 2.1.1 Choice of the Reconstruction Error L
+順当に考えれば,
+- MSE
+- pixel-wise cross-entropy
+とかが妥当.
+
+しかし, 実験的にpixel-wiseな上の二つではぼやけた写真が生成されることがわかっている.
+
+ぼやける仮説:
+テクスチャの多様体は非常に高次元だが潜在空間が低次元である. pixel-wiseな誤差では, テクスチャが一つ領域として再構成されるので, 高周波数の位相が潜在空間では符号化できない. → 周波数成分毎に再構成すればいい！
+
+![127_03](https://github.com/wataoka/papersheet2md/blob/main/images/127_03.png?raw=true)
+
+- F: フーリエ変換
+- σ: ガウシアンカーネル
+- * : convolution operator
+つまり, 画像1と画像2のpixel-wiseの引き算をして, それをガウシアンフィルタする. (ある周波数成分だけ取り出す.) 
+
+論文では, 高周波数成分の再構成は不可能であると仮定し, 低周波数成分だけを取り出して学習している. よりぼやけた解になるようにしている. (はぁ？)
+
+#### 2.1.2 Recursive Estimation of the Trajectory
+式(2)を下のようにすることで問題を解く.
+
+![127_04](https://github.com/wataoka/papersheet2md/blob/main/images/127_04.png?raw=true)
+
+(生成画像を変換画像に近づけるzを見つける.)
+
+自然画像の線形和は自然な画像にならないので, 自然画像の多様体が高度に湾曲していることがわかる. このことから, 式(2)の問題の収束が遅いことが理解できる.
+
+対処するために, transformation Τtを何度も行う多様体上の最適化を提案する.
+
+![127_05](https://github.com/wataoka/papersheet2md/blob/main/images/127_05.png?raw=true)

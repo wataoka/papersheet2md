@@ -1,0 +1,65 @@
+## 概要
+unsupervised editing. 背景削除の方向を見つけたらしい. sacliency detectionでSOTA.
+
+[1~K]のどれかkをone-hotエンコードし, ε倍する. (d×Kの行列A) * (ε倍されたK次元one-hotエンコードe)でε倍されたAの列を一つ取り出す. その列をzに足した奴がshift. zとz+A(εe)をreconstructor Rに入力し, kとεを予測. AとRの精度を上げることで, 見分けが追記やすいshiftになる.
+
+![128_01](https://github.com/wataoka/papersheet2md/blob/main/images/128_01.png?raw=true)
+
+Figure2.
+- direction index kをone-hotでエンコード: e_k
+- e_kを[-ε, ε]の範囲のどれかの値でかける: ε*e_k (ε: shift magnitude)
+- その結果を行列Aにかける.
+- zとz+A(ε*e_k)をGに入力.
+- Gは二つの画像を生成.
+- 生成した二つの画像をRに入力. (R: Reconstructor)
+- Rは二つの画像からkとεを予測.
+
+つまり, Aの列がwalkする方向に当たる.
+
+## 手法 (3. Method)
+### 3.2 Learning
+- A: d×K行列
+- d: zの次元
+- K: 見つけたい方向の数. (これはハイパラであり, 次のsectionで議論している.)
+- G: 学習済みgenerator
+- R: reconstructor. G(z)とG(z+A(ε*e_k))を受け取り, kとεを予測する. ( R(I1, I2) = (k^, ε^) )
+
+損失関数
+![128_02](https://github.com/wataoka/papersheet2md/blob/main/images/128_02.png?raw=true)
+
+普通にkの損失とεの損失の線形和.
+kの損失はcross-entropy
+イプシロンの損失はmean absolute error
+実験では, λ=0.25とした.
+
+これにより, AはRが区別しやすい画像変換を引き起こす方向を学習することになる.
+結果, 人間においても解釈しやすい画像変換をしてくれるようになる.
+
+## 3.3 Practical details
+#### Generator
+4章に書かれてる
+- Spectral Norm GAN for MNIST and AnimeFace
+- ProgGAN for CelebaA-HQ
+- BigGAN for ILSVRC
+
+#### Reconstructor
+- モデル
+  - ReNer for MNIST and AnimeFaces
+  - ResNet-18 for Imagenet and CelebA-HQ
+- concatnate
+  - 二つの画像はchannel wiseにconcatnateしている.
+  - つまり, MNISTでは2ch, 他では6chとして入力している.
+
+#### Distributions
+- latent code
+  - N(0, I)
+- direction index k
+  - U{1, K}
+- shift magnitude ε
+  - U[-6, 6]
+
+## 実験
+MNIST, AnimeFace, Imagenet, CelebA-HQで実験した. saliency detectionでSOTA.
+
+## wataokaのコメント
+code: https://github.com/anvoynov/GanLatentDiscovery, まだarXiv論文だがどこかにacceptされそう.

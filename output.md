@@ -555,7 +555,15 @@ wataokaの日本語訳「ディープネットワークの情報はどこにあ�
 
 ### 概要
 
-DNNが過去のデータから収集した情報は全て重みでエンコードされる. その情報は未知データに対するDNNの反応にどう影響するのかは未解決問題. 実際, DNN内の情報の定義の仕方や測り方でさえ曖昧.
+DNNが過去のデータから収集した情報は全て重みでエンコードされる.
+その情報は未知データに対するDNNの反応にどう影響するのかは未解決問題.
+実際, DNN内の情報の定義の仕方や測り方でさえ曖昧.
+DNNの重みの情報はaccuracy重みに複雑度とのトレードオフとして測られる.
+事前分布に依存する定義としてシャノン 相互情報量やフィッシャー情報量など既知の情報に落とし込まれ, 一般にPACベイズboundを介した汎化と不変性に関連づけることを可能にする追加の柔軟性を提供する.
+後者についてはactivationに有効な情報の概念を導入する.
+これは未知の入力の決定論的な関数.
+これを重みの情報に使用して, 複雑度の低いモデルは汎化性能が向上するだけでなく, 未知の入力の不変表現を学習することに繋がる.
+これらの関係はモデルのアーキテクチャだけでなくモデルのトレーニング方法にも依存する.
 
 
 ## Estimating individual treatment effect: generalization bounds and algorithms
@@ -1240,17 +1248,73 @@ wataokaの日本語訳「質, 安定性, 多様性を向上させるためのPG-
 - URL: [https://arxiv.org/abs/1710.10196](https://arxiv.org/abs/1710.10196)
 
 
-### 概要
+## 概要
+- 画像などの解像度が高くなると生成分布のランダム要素が強くなるので, 学習が不安定になる. そこでPGGANを提案した.
+- PG-GANは低解像度の画像から始めて, ネットワークにレイヤーを徐々に追加して解像度を上げていくGAN.
 
-画像などの解像度が高くなると生成分布のランダム要素が強くなるので, 学習が不安定になる. そこでPGGANを提案した.
+![117_01](https://github.com/wataoka/papersheet2md/blob/main/images/117_01.png?raw=true)
 
-### 手法
+### いろんな工夫
+#### progressive growing
+GeneratorとDiscriminatorにレイヤーを一つずつ追加していくことで, 解像度を徐々に上げていく.
 
-Progressive Growing: 徐々に解像度を上げる. minibatch discrimination: ミニバッチ全体の統計量を計算し, それぞれの画像に反映させる. equalized learning rate: wiによって学習率を変えない. pixelwise feature vec normalization in generator: まぁfeature vecの正規化.
+レイヤーを追加する際も, 2×した結果と2倍のCNNの結果を線形結合し, αの値を徐々に上げていくことで, 2倍のCNNの結果の影響を徐々に上げていく.
 
-### wataokaのコメント
+2×: 2×2で複製,  0.5×: average pooling
 
-参考記事1 
+![117_02](https://github.com/wataoka/papersheet2md/blob/main/images/117_02.png?raw=true)
+
+#### minibatch discrimination (model collapse対策)
+- minibatchの同じ画素に関して標準偏差を求める.
+- 出来上がった1枚の画像の全てのピクセルで平均値を計算. スカラーを得る.
+- そのスカラーを複製することで1チャネルの画像(H×W)を得る.
+このミニバッチカラー画像→1枚の白黒画像という処理をDiscriminatorの最後に追加する. これにより, Discriminatorはミニバッチ全体の統計量も考慮の対象となる. 従って, Generatorはミニバッチ全体での統計量分布も模倣するので, real data同様多様性を獲得する. らしい.
+
+#### equalized learning rate (収束性対策)
+重みの初期値としてガウス分布N(0, 1)を使用する.
+
+そして, 
+![117_05](https://github.com/wataoka/papersheet2md/blob/main/images/117_05.png?raw=true)
+とする.
+
+wi: 重み
+c: 各層の正規化定数. (Heの初期化を行う.)
+
+これによって以下のようになる.
+- スケールの影響を受けずにパラメータの更新ができるので学習速度があがう.
+- スケールを整えているので, 全ての重みに対して均質に学習するため, 強い情報に引っ張られすぎない.
+
+#### pixelwise feature vector normalization in generator (収束性対策)
+普通に特徴量の正規化.
+GeneratorのCNN層の後に各ピクセル毎にfeature vectorを以下のように正規化する.
+
+![117_04](https://github.com/wataoka/papersheet2md/blob/main/images/117_04.png?raw=true)
+
+- N: チャネル数
+- a: 元の特徴ベクトル
+- b: 正規化されたベクトル
+
+pixel毎に正規化してる感じが影響の強い信号を軽減させてる感じなのかな？多分.
+
+#### multi-scale structural similarity (評価手法)
+- うまく学習できたGは以下であると仮定している.
+  - 局所的な画像構造が全てのスケールにわたって本物の画像と似ている.
+  - (DとGの局所的な画像構造の分布が全てのスケールで近い)
+- 局所特徴量
+  - レベルLの1枚の画像から128個の特徴量を抽出する.
+  - 局所特徴量は7x7ピクセルで3チャネル.
+  - レベルLの訓練データの特徴量xは128×(データ数)だけ得られる.
+  - 生成データも同じデータ数生成することで同じだけ特徴量yが得られる.
+  - 128x(データ数)個の特徴量をそれぞれ{x}, {y}と表記する.
+- 分布距離
+  - 各チャンネルの平均と標準偏差から{x}と{y}を正規化する.
+  - {x}と{y}の統計的な類似度として, sliced Wasserstein distanceを採用する.
+  - SWD({x}, {y})
+  - これが小さければ分布{x}と分布{y}が類似している.
+
+これによって
+- 最低解像度16x17での分布距離は大まかな画像構造の類似性を表し,
+- 高解像度での分布距離はエッジやノイズの鮮明さなどピクセルレベルでの情報の類似性を表す.
 
 ## CAN: Creative Adversarial Networks, Generating "Art" by Learning About Styles and Deviating from Style Norms
 
@@ -1367,23 +1431,41 @@ wataokaの日本語訳「GANalyze: 認知的画像特性の視覚的定義に向
 - URL: [https://arxiv.org/abs/1906.10112](https://arxiv.org/abs/1906.10112)
 
 
-### 概要
+![125_01](https://github.com/wataoka/papersheet2md/blob/main/images/125_01.png?raw=true)
 
-surpervised editing. 記憶性, 美的性, 感情的価値性などの認知特性を高めるように潜在空間でwalkする方法を実験した.
+Figure1: GANalyzeで作成した可視化. 中央の列は, 元の種となる生成された画像を表している. 元画像は関心のある特性（記憶力, 美的感覚, 情緒的価値）によって, より特徴的な(右)かより特徴的でない(左)かを判断するように修正されている. 画像のそれぞれの特性のスコアは左上隅に表示されている.
 
-### 手法
+## 概要
+- 記憶力、美学、感情的価値などの認知特性を研究するためのフレームワークを提案.
+- GANの潜在変数を記憶性を高める方向にナビゲートすることで, 生成された特定の画像が記憶に残りやすくなったり, 記憶に残らなくなったりするためには, どのように見えるかを可視化することができる. 
+- 結果として得られる「視覚的定義」には, 記憶性の根底にあるかもしれない画像の特性（「物体の大きさ」など）が表面化されている.
+- 本研究では, 行動実験を通じて我々の手法が人間の記憶力に影響を与える画像操作を実際に発見できることを検証する. 
+- さらに, 同じフレームワークを用いて, 画像の美学や情緒的価値観の分析が可能であることを実証する.
 
-AをMemNetなどの, 画像から特性を出力する評価関数とした時, 以下を最小化するθを見つける.
-A(G(z+αθ)) - A(G(z))+α
+## 2 手法 (Model)
+### 2.1 Formulation
+目的: 任意のクラスyの任意のノイズベクトルzを変換し, その結果生成された画像の記憶性がある量αだけ増加（または減少）するように学習することである.
 
-### 結果
+A: Assessor (評価関数): 生成画像→属性値
+とすると, 
 
+![125_02](https://github.com/wataoka/papersheet2md/blob/main/images/125_02.png?raw=true)
+
+を最小化するT(のパラメータθ)を Adamで探索する.
+
+この論文では,
+	T_θ(z, α) = z + αθ
+	A: MemNet
+としている.
+
+### MemNet
+memorabilityを予測してくれるCNN.
+
+## 結果
 画像の記憶性が物体の大きさとして表面化したことを示した.
 
-### wataokaのコメント
-
+## wataokaのコメント
 website: http://ganalyze.csail.mit.edu/
-
 ## Interpreting the Latent Space of GANs for Semantic Face Editing
 
 wataokaの日本語訳「意味論的顔編集のためのGANの潜在空間の解釈」
@@ -1393,21 +1475,45 @@ wataokaの日本語訳「意味論的顔編集のためのGANの潜在空間の�
 - URL: [https://arxiv.org/abs/1907.10786](https://arxiv.org/abs/1907.10786)
 
 
-### 概要
+## 概要
+これまでの研究では, GANが学習する潜在空間はdistributed representationに従うと仮定してきたが, ベクトル演算現象を観測している. 本研究では, GANが学習した潜在意味空間を解釈することで意味論的顔編集を行うための新しいフレームワークInterFaceGANを提案する.
 
-supervised editing. InterFaceGANを提案. GANの潜在空間を解釈するために, 顔属性編集を行える.
+この研究では, 顔生成のためにGANの潜在空間にどのように異なる意味論がエンコードされているかを詳細に研究した. よく訓練された生成モデルの潜在コードは線形変換後, disentangledされた表現を学習していることがわかった.
 
-### 手法
+部分空間射影を用いることで, entangledされた(もつれた)意味論を切り離し, 正確な顔属性のコントロールに成功した. 性別, 年齢, 表情, メガネの有無などに加えて, GANが誤って生成した画像を修正することも可能.
 
-GANとEncoderを用意し, 属性付き顔画像を潜在空間に埋め込む. 埋め込まれたベクトルをある属性で分離する超平面をSVMで作り, その法線方向にzを移動させることで, その属性に関して編集できる.
+また, 顔生成を自然に学習することによって, disentangleされ, コントロールしやすい顔属性表現を獲得することができる.
 
-### 結果
+## 2 Related Work
+GAN Inversion (GANの逆変換)
+画像空間から潜在変数への逆写像をいるための手法のことをGAN Inversionという. [42], [43], [44]
 
-かなりうまく編集できている. 条件付き編集も提案しており, 固定したい属性を固定もできている.
+既存手法として, 以下がある.
+- インスタンスレベルの最適化手法 [45], [46], [47]
+- generatorと対応するencoderの学習 [48], [49], [50]
+最近の研究では, 以下がある.
+- エンコーダを用いて最適化における良い初期値を見つける. [51], [52]
+- Guらは良い再構成のために潜在空間の次元を増やすことを提案している. [53]
+- Panらはモデルの重みとともに潜在変数の最適化を試みしている. [54]
+- Zhuらはピクセルの値を復元することと共に, 意味論的情報も考慮に入れている. [55]
 
-### wataokaのコメント
+## 3 Framework of InterFaceGAN
+### 3.2 Manipulation in Latent Space
+#### Real Image Manipulation
+実画像の属性を編集するためには実画像を潜在変数に埋め込む必要があるが, 最適化ベースの手法[55]と学習ベースの手法[50]がある. それぞれの強みと弱みを6章で評価している. 
 
-Detecting Bias with Generative Counterfactual Face Attribut Augmentationの拡張というか理論というか
+また, 我々は実画像データ編集により, 人工ペアデータの作成を行っい,  それを用いてimage-to-image translationの学習を行った. これに関しても6章で解析している.
+
+## 6 Real Image Manipulation
+### 6.1 Combining GAN Inversion with InterFaceGAN
+pre-trained GANをinvertするための手法は2種類ある.
+1. ピクセル単位での再構成誤差を最小化するために修正したgeneratorを用いて潜在変数を直接最適化する最適化ベースの手法. [45], [55]
+2. 外部エンコーダに逆変換を学習させるエンコーダベースの手法. [41]
+この論文では, PGGANとStyleGANでこの二つの手法をテストした.
+
+
+## wataokaのコメント
+Detecting Bias with Generative Counterfactual Face Attribut Augmentationの理論的かつ拡張的な論文
 
 ## Controlling generative models with continuous factors of variations
 
@@ -1418,38 +1524,134 @@ wataokaの日本語訳「変動の連続的な要因による生成モデルの�
 - URL: [https://arxiv.org/abs/2001.10238](https://arxiv.org/abs/2001.10238)
 
 
-### 概要
-
+## 概要
 semi-supervised editing. 鳥とかきのことかを編集している. pixel-wiseな損失では高周波成分をうまく再構成できていないと怒っていた.
 
-### 手法
+## 2 LATENT SPACE DIRECTIONS OF A FACTOR OF VARIATION
+### 2.1 Latent Space Trajectories of an Image Transformation
+G: 潜在空間→画像空間
+Tt: 画像空間→画像空間 (parametrized by t)
+I = なんかの画像とした時,
 
-あまり理解できていないが, L(G(z), T(I))を最小化するようなzを探索し, 損失が少ないやつを逐次的に採用していく感じ. 特徴的なところとして, Lとして低周波数成分に注目する損失値を使用している.
+![127_01](https://github.com/wataoka/papersheet2md/blob/main/images/127_01.png?raw=true)
+
+となるような潜在ベクトルz^を見つけたい. 
+Encoderを学習すればできることだがそうはしない.
+三つ組(z0, zdt, dtn)のデータセットを作成→それを用いて
+
+このまま最適化すれば, 尤度の低い点に最適値を見つけてしまい, unrealisticな画像を生成してしまう危険がある. zは多次元ガウシアン分布に従うので, ノルムの期待値はsqrt(d)となる. (d: 潜在空間の次元) 従って, 下のように制限を加える.
+ 
+![127_02](https://github.com/wataoka/papersheet2md/blob/main/images/127_02.png?raw=true)
+↑
+式(2)
+
+#### 2.1.1 Choice of the Reconstruction Error L
+順当に考えれば,
+- MSE
+- pixel-wise cross-entropy
+とかが妥当.
+
+しかし, 実験的にpixel-wiseな上の二つではぼやけた写真が生成されることがわかっている.
+
+ぼやける仮説:
+テクスチャの多様体は非常に高次元だが潜在空間が低次元である. pixel-wiseな誤差では, テクスチャが一つ領域として再構成されるので, 高周波数の位相が潜在空間では符号化できない. → 周波数成分毎に再構成すればいい！
+
+![127_03](https://github.com/wataoka/papersheet2md/blob/main/images/127_03.png?raw=true)
+
+- F: フーリエ変換
+- σ: ガウシアンカーネル
+- * : convolution operator
+つまり, 画像1と画像2のpixel-wiseの引き算をして, それをガウシアンフィルタする. (ある周波数成分だけ取り出す.) 
+
+論文では, 高周波数成分の再構成は不可能であると仮定し, 低周波数成分だけを取り出して学習している. よりぼやけた解になるようにしている. (はぁ？)
+
+#### 2.1.2 Recursive Estimation of the Trajectory
+式(2)を下のようにすることで問題を解く.
+
+![127_04](https://github.com/wataoka/papersheet2md/blob/main/images/127_04.png?raw=true)
+
+(生成画像を変換画像に近づけるzを見つける.)
+
+自然画像の線形和は自然な画像にならないので, 自然画像の多様体が高度に湾曲していることがわかる. このことから, 式(2)の問題の収束が遅いことが理解できる.
+
+対処するために, transformation Τtを何度も行う多様体上の最適化を提案する.
+
+![127_05](https://github.com/wataoka/papersheet2md/blob/main/images/127_05.png?raw=true)
 
 ## Unsupervised Discovery of Interpretable Directions in the GAN Latent Space
 
 wataokaの日本語訳「GANの潜在空間における解釈可能方向の教師なし発見」
 - 種類: GAN
+- 学会: ICML2020
 - 日付: 20200210
 - URL: [https://arxiv.org/abs/2002.03754](https://arxiv.org/abs/2002.03754)
 
 
-### 概要
-
+## 概要
 unsupervised editing. 背景削除の方向を見つけたらしい. sacliency detectionでSOTA.
-
-### 手法
 
 [1~K]のどれかkをone-hotエンコードし, ε倍する. (d×Kの行列A) * (ε倍されたK次元one-hotエンコードe)でε倍されたAの列を一つ取り出す. その列をzに足した奴がshift. zとz+A(εe)をreconstructor Rに入力し, kとεを予測. AとRの精度を上げることで, 見分けが追記やすいshiftになる.
 
-### 結果
+![128_01](https://github.com/wataoka/papersheet2md/blob/main/images/128_01.png?raw=true)
 
+Figure2.
+- direction index kをone-hotでエンコード: e_k
+- e_kを[-ε, ε]の範囲のどれかの値でかける: ε*e_k (ε: shift magnitude)
+- その結果を行列Aにかける.
+- zとz+A(ε*e_k)をGに入力.
+- Gは二つの画像を生成.
+- 生成した二つの画像をRに入力. (R: Reconstructor)
+- Rは二つの画像からkとεを予測.
+
+つまり, Aの列がwalkする方向に当たる.
+
+## 手法 (3. Method)
+### 3.2 Learning
+- A: d×K行列
+- d: zの次元
+- K: 見つけたい方向の数. (これはハイパラであり, 次のsectionで議論している.)
+- G: 学習済みgenerator
+- R: reconstructor. G(z)とG(z+A(ε*e_k))を受け取り, kとεを予測する. ( R(I1, I2) = (k^, ε^) )
+
+損失関数
+![128_02](https://github.com/wataoka/papersheet2md/blob/main/images/128_02.png?raw=true)
+
+普通にkの損失とεの損失の線形和.
+kの損失はcross-entropy
+イプシロンの損失はmean absolute error
+実験では, λ=0.25とした.
+
+これにより, AはRが区別しやすい画像変換を引き起こす方向を学習することになる.
+結果, 人間においても解釈しやすい画像変換をしてくれるようになる.
+
+## 3.3 Practical details
+#### Generator
+4章に書かれてる
+- Spectral Norm GAN for MNIST and AnimeFace
+- ProgGAN for CelebaA-HQ
+- BigGAN for ILSVRC
+
+#### Reconstructor
+- モデル
+  - ReNer for MNIST and AnimeFaces
+  - ResNet-18 for Imagenet and CelebA-HQ
+- concatnate
+  - 二つの画像はchannel wiseにconcatnateしている.
+  - つまり, MNISTでは2ch, 他では6chとして入力している.
+
+#### Distributions
+- latent code
+  - N(0, I)
+- direction index k
+  - U{1, K}
+- shift magnitude ε
+  - U[-6, 6]
+
+## 実験
 MNIST, AnimeFace, Imagenet, CelebA-HQで実験した. saliency detectionでSOTA.
 
-### wataokaのコメント
-
+## wataokaのコメント
 code: https://github.com/anvoynov/GanLatentDiscovery, まだarXiv論文だがどこかにacceptされそう.
-
 ## PULSE: Self-Supervised Photo Upsampling via Latent Space Exploration of Generative Models
 
 wataokaの日本語訳「PULSE: 生成モデルの潜在空間探索によるself-supervised高画質化」
@@ -1459,16 +1661,35 @@ wataokaの日本語訳「PULSE: 生成モデルの潜在空間探索によるsel
 - URL: [https://arxiv.org/abs/2003.03808](https://arxiv.org/abs/2003.03808)
 
 
-### 概要
-
+## 概要
 高解像(HR)なし, 低解像(LR)のみで超解像(SR)を作成できるPULSEを提案.
 
-### 手法
+## 手法 (3. Method)
+- LR:	低解像度画像
+- HR:	高解像度画像
+- SR:	超解像度画像
+- M:	自然画像多様体
+- G:	generator
+- L:	lantent space
+- I_LR:	低解像度画像 (given)
+- DS:	Down Scaling
+- R:	HRをDSした時, LRになるHRの集合.
 
 学習済みGはz→自然画像多様体というmapをしてくれるという仮定の下, ||DS(G(z)) - LR||を最小化するzを探索する. 勾配が得られるので勾配ベース. 探索の工夫としては, 超球面の表面上のみで探索を行う制約をかけてzの尤度をあげている.
 
-### wataokaのコメント
+### 3.2 Latent Space Exporation
+理想としては,
+生成画像G(z)の集合が多様体Mを近似してくれていれば,
 
+というzを見つけるだけでOK.
+
+しかし, G(z)∈Mとなる保証はない.
+G(z)∈Mを保証するためには, 事前分布において高い確率のLの領域にいる必要がある.
+潜在変数が高い確率の領域にいるようにするために, 事前分布の負の対数尤度の損失項を加える. 
+
+事前分布がガウス分布である場合, L2正則としている研究があるが, この正則はベクトルを0に向けて強制するもので, 高次元ガウシアンの質量の大部分は半径√dの球体の表面付近にある. これを回避するために, 事前分布をR^dのガウス分布ではなく√d S^(d-1)の一様分布とした. 
+
+## コメント
 website: http://pulse.cs.duke.edu/
 
 ## ON THE “STEERABILITY” OF
@@ -1481,19 +1702,50 @@ wataokaの日本語訳「GANの「操縦性」について」
 - URL: [https://openreview.net/pdf?id=HylsTT4FvB](https://openreview.net/pdf?id=HylsTT4FvB)
 
 
-### 概要
+## 概要
+semi-supervised editing手法. GANはデータセットバイアス(e.g.物体が中心にくる)に影響されているが, 潜在空間で「steering」することで, 現実的な画像を作成しながら分布を移動することができる.
 
-semi-supervised editing. GANはデータセットバイアス(e.g.物体が中心にくる)に影響されているが, 潜在空間で「steering」することで, 現実的な画像を作成しながら分布を移動することができる.
+## 1 Introduction
+#### main findings
+- GANの潜在空間の中でのsimple walkで, 出力画像空間におけるカメラモーションや色変換などを可能にする. そのsimple walkは属性ラベルやラベルやソース画像とターゲット画像のラベル無しで学習できる.
+- 線形walkは非線形walkと同様に効果的. モデルを明示的に学習しなくてもそうなるようになってる.
+- モデルの分布をどれだけシフトできるかとデータセットの豊さの関係を定量化した.
+- 変換は汎用フレームワーク. BigGAN, StyleGAN, DCGANなどで行える.
+- 歩行軌跡の訓練により, 操縦性を向上させる.
 
-### 手法
+## 2 Related work
+Applications of latent space editing
+- Denton, 2019:	顔属性検出器のバイアス測定
+- Shenet, 2019:	潜在空間のdisentanglementの可視化
+- この論文:	データセットバイアス測定
 
-edit(G(z),α) - G(z+αw)を最小化するw(walk)を勾配探索で見つける. editは計算できる編集(zoomとか)なので, 編集自体に意味はない. 論文としては, steerabilityが高い属性はその属性に対するデータセットのバイアスが少ないと言えることから, この操縦に意味を見出している.
+## 3 Method
+目標: Figure 2のように, 潜在空間内を移動することで, 出力空間内の変換を実現する
 
-### wataokaのコメント
+この目標は入力空間における変換が出力空間における等価変換をもたらすという等変量における考え方だと捉えることができる. (c.f. Hinton(2011), Cohen(2019), Lenc&Vedaldi(2015))
 
-paper, poster, codeがある
+zにαwを足すことが操縦で, 所望の操作edit(G(z), α)との損失を最小化する. 損失はL2ノルム
+edit(G(z), α)は, 例えば生成画像G(z)をα倍ズームしたものとか. αwを足すような線形的な移動だけでなく, ニューラルネットを用いた非線形な手法にも拡張できる.
+
+メモ
+- edit(G(z), α)が計算可能なものは限られている.
+- edit(G(z), α)が計算可能ということはそのような画像を作れること自体に価値はない.
+- なので, steerabilityの評価からデータセットバイアスにつなげている.
+
+## 4 Experiments
+### 4.1 What Image Transformatinos can we achieve in latent space?
+walkさせた時に2つの失敗を観測した.
+- unrealisticになってしまう.
+- 所望のtransformが全然できていない
+
+猫ちゃんをzoom-inとzoom-outしようとしたら溶けたり立ち上がったりした.
+ピザを回転させようとしても全くしなかった
 ↓
- https://ali-design.github.io/gan_steerability/
+ImageNetのデータセットにある画像に限界があるからではないかと考えた.
+
+興味深いことに, walkがoutputに影響を与える量は画像のclassに依存していた. 
+(クラゲは様々な色に変化ができたが, goldfinch(黄色の鳥)はできなかった)
+(噴火する火山は明るさを変えられたが, アルプスは変えられなかった)
 
 ## Detecting Bias with Generative Counterfactual Face Attribute Augmentation
 
@@ -1994,24 +2246,57 @@ wataokaの日本語訳「実画像編集のためのIn-Domain GAN Inversion」
 - URL: [https://arxiv.org/abs/2004.00049](https://arxiv.org/abs/2004.00049)
 
 
-### 概要
+## 概要
+- 背景
+  - GANの潜在空間には多様な意味論が含まれている.
+  - しかし, それを実画像編集に利用するのは難しい.
+  - 一般的な既存のGAN inversionの手法はピクセル単位での画像再構成.
+  - その方法では, 潜在空間の意味論ドメインに埋め込むことは難しい.
+  - この論文では, in-domain GAN inversionを提案する.
+  - 入力画像を忠実に再構成する.
+  - 埋め込んだコードが編集のための意味論を持ち合わせている.
+- 手法
+  - まず, 新たに提案するdomain-guidedエンコーダーを学習する.
+  - 次に, エンコーダが生成する潜在コードを微調整し, ターゲット画像をより復元するために, エンコーダを正則化器として関与させることで, ドメイン正則化の最適化方法を提案する.
+- 提案手法は実験により以下が示された.
+  - 安全な実画像の再構成
+  - 編集タスクにおいて多様な画像を生成できる
 
-GANのinverseをエンコーダ学習と最適化で行った論文. 実画像を再構成するエンコーダ(domain-guided encoder)を先に学習させておき, それを正則化として最適化する.
+## 2 In-Domain GAN Inversion
 
-### 手法
+![147_01](https://github.com/wataoka/papersheet2md/blob/main/images/147_01.png?raw=true)
 
-まず, x→[E]→z→[G]→x'→[D]→real/recでEとDを敵対的に学習させる. そしてxからzを推論するために, 次の3つを満たすように最適化を解く. (1)生成画像G(z)がxに近い. (2)G(z)の特徴量F(G(z))がxの特徴量F(x)と近い. (3) G(z)のエンコードE(G(z))が元のzに近い.
+大体の訳)
+Fig.2. (a) 従来のエンコーダの学習とdomain guided encoder for GAN inversionの違い. 青色のブロックは訓練を行うモデル. 赤色の点線矢印は教師データからの監視を示している. 従来では, z→生成画像→z’だったが, 提案するdomain -guided encoderは実画像→e→再構成画像とする. (b) 従来の最適化と提案するドメイン正則化の最適化の比較. 訓練ずみdomain-guided encoderは最適化プロセスの中で意味論的ドメインに潜在コードを埋め込みための正則化として含まれる.
 
-### 結果
+## 2.1 Domain-Guided Encoder
+zをサンプルし, 画像を生成し, zを再構成するだけの従来手法とは以下の3つの点で異なる.
+1. 潜在空間での再構成ではなく, 画像空間でも再構成.
+2. 生成データではなく, 実データでの学習.
+3. 再構成データをrealにするためにDiscriminatorを使用する.
 
+## 2.2 Domain-Regularized Optimization
+GANは潜在分布から画像分布への近似という分布レベルのものであるが, GAN inversionはインスタンスレベル. なので, エンコーダのみで逆変換を行うのには限界がある. それゆえ, 提案したdomain-guided encoderで推論した潜在コードをピクセルレベルで修正する必要がある.
+
+Fig.2.(b)で示している通り, 従来手法ではgeneratorのみに基づいた, 言わば自由な最適化が行われる. (xからどの意味論にするのかが結構自由という意味) なので, 割とドメイン外の潜在コードを推論してしまう可能性がある. 我々はdomain-guided encoderを用いてxから最適なzを求める. 理想的なスタート地点として, domain-guided encoderの出力を用いる. これによって, この後の最適化で局所解に陥ることを防ぐ. そしてdomain-guided encoderを正則化として用いる. これによって, 意味論のドメイン外の潜在コードを推論してしまうことを防ぐ. xが与えられた時に, zを推論する際の目的関数は以下である.
+
+![147_02](https://github.com/wataoka/papersheet2md/blob/main/images/147_02.png?raw=true)
+
+where FはVGGのような特徴量抽出用モデル.
+
+つまり, xが与えられた時に, zは以下を満たすもの.
+- 生成画像G(z)がxに近い.
+- 生成画像G(z)の特徴量とxの特徴量が近い.
+- 生成画像G(z)のエンコードが元のzからできるだけ離れない.
+
+## 結果
 顔属性変換, image interpolation, semantic diffusionタスクに適応させて, 従来手法よりよかった.
 
-### wataokaのコメント
 
-TensorFlowのコードもPyTorchのコードもある
+## wataokaのコメント
+"TensorFlowのコードもPyTorchのコードもある
 website: https://genforce.github.io/idinvert/
-interfaceganとLIAと同じgithubグループ
-
+interfaceganとLIAと同じgithubグループ"
 ## Image Processing Using Multi-Code GAN Prior
 
 wataokaの日本語訳「複数のGANの事前コード(z)を用いた画像処理」

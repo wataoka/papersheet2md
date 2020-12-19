@@ -1,0 +1,67 @@
+## 概要
+- 画像などの解像度が高くなると生成分布のランダム要素が強くなるので, 学習が不安定になる. そこでPGGANを提案した.
+- PG-GANは低解像度の画像から始めて, ネットワークにレイヤーを徐々に追加して解像度を上げていくGAN.
+
+![117_01](https://github.com/wataoka/papersheet2md/blob/main/images/117_01.png?raw=true)
+
+### いろんな工夫
+#### progressive growing
+GeneratorとDiscriminatorにレイヤーを一つずつ追加していくことで, 解像度を徐々に上げていく.
+
+レイヤーを追加する際も, 2×した結果と2倍のCNNの結果を線形結合し, αの値を徐々に上げていくことで, 2倍のCNNの結果の影響を徐々に上げていく.
+
+2×: 2×2で複製,  0.5×: average pooling
+
+![117_02](https://github.com/wataoka/papersheet2md/blob/main/images/117_02.png?raw=true)
+
+#### minibatch discrimination (model collapse対策)
+- minibatchの同じ画素に関して標準偏差を求める.
+- 出来上がった1枚の画像の全てのピクセルで平均値を計算. スカラーを得る.
+- そのスカラーを複製することで1チャネルの画像(H×W)を得る.
+このミニバッチカラー画像→1枚の白黒画像という処理をDiscriminatorの最後に追加する. これにより, Discriminatorはミニバッチ全体の統計量も考慮の対象となる. 従って, Generatorはミニバッチ全体での統計量分布も模倣するので, real data同様多様性を獲得する. らしい.
+
+#### equalized learning rate (収束性対策)
+重みの初期値としてガウス分布N(0, 1)を使用する.
+
+そして, 
+![117_05](https://github.com/wataoka/papersheet2md/blob/main/images/117_05.png?raw=true)
+とする.
+
+wi: 重み
+c: 各層の正規化定数. (Heの初期化を行う.)
+
+これによって以下のようになる.
+- スケールの影響を受けずにパラメータの更新ができるので学習速度があがう.
+- スケールを整えているので, 全ての重みに対して均質に学習するため, 強い情報に引っ張られすぎない.
+
+#### pixelwise feature vector normalization in generator (収束性対策)
+普通に特徴量の正規化.
+GeneratorのCNN層の後に各ピクセル毎にfeature vectorを以下のように正規化する.
+
+![117_04](https://github.com/wataoka/papersheet2md/blob/main/images/117_04.png?raw=true)
+
+- N: チャネル数
+- a: 元の特徴ベクトル
+- b: 正規化されたベクトル
+
+pixel毎に正規化してる感じが影響の強い信号を軽減させてる感じなのかな？多分.
+
+#### multi-scale structural similarity (評価手法)
+- うまく学習できたGは以下であると仮定している.
+  - 局所的な画像構造が全てのスケールにわたって本物の画像と似ている.
+  - (DとGの局所的な画像構造の分布が全てのスケールで近い)
+- 局所特徴量
+  - レベルLの1枚の画像から128個の特徴量を抽出する.
+  - 局所特徴量は7x7ピクセルで3チャネル.
+  - レベルLの訓練データの特徴量xは128×(データ数)だけ得られる.
+  - 生成データも同じデータ数生成することで同じだけ特徴量yが得られる.
+  - 128x(データ数)個の特徴量をそれぞれ{x}, {y}と表記する.
+- 分布距離
+  - 各チャンネルの平均と標準偏差から{x}と{y}を正規化する.
+  - {x}と{y}の統計的な類似度として, sliced Wasserstein distanceを採用する.
+  - SWD({x}, {y})
+  - これが小さければ分布{x}と分布{y}が類似している.
+
+これによって
+- 最低解像度16x17での分布距離は大まかな画像構造の類似性を表し,
+- 高解像度での分布距離はエッジやノイズの鮮明さなどピクセルレベルでの情報の類似性を表す.
