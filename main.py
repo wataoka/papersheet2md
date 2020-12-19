@@ -13,7 +13,8 @@ from constants import (
     SPREADSHEETS_NAME,
     SHEETS_NAME, 
     SCOPE,
-    NOTE_FILEID_LIST
+    NOTE_FILEID_LIST,
+    IGNORE_ID_LIST 
 )
 
 
@@ -56,10 +57,12 @@ def main(filename='output.md'):
 
             # get row
             row_df = sheet_df[row:row+1]
-
             # check end
             if len(row_df) == 0:
                 break
+            # check ignore
+            if row+2 in IGNORE_ID_LIST:
+                continue
 
             # set values
             title_en = row_df['論文名'].values[0]

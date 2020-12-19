@@ -22,3 +22,6 @@ for filepath in NOTE_FILEPATH_LIST:
     NOTE_FILENAME_LIST.append(filepath.split('/')[-1])
 for filename in NOTE_FILENAME_LIST:
     NOTE_FILEID_LIST.append(filename.split('.')[0])
+
+# ignore
+IGNORE_ID_LIST : list = []

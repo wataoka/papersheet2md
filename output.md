@@ -1714,7 +1714,46 @@ wataokaの日本語訳「尤度が必要ない過完備ICAと
 - URL: [https://arxiv.org/abs/1909.01525](https://arxiv.org/abs/1909.01525)
 
 
-<iframe src="https://docs.google.com/document/d/e/2PACX-1vTxC1eyyTWwhfrg6J4QolY3HQ2KvW9b1LPepz26paT2Flm2k1TCKkXMjNggcAlCivgXjZjPPMyLBNyT/pub?embedded=true"></iframe>
+## 概要
+- 既存OICAの悪いところ
+    - 独立成分の分布の過程が強い
+    - EMアルゴリズムにおいて独立成分の事後分布の推論にかかる計算コストが高い
+- LFOICA
+    - 独立成分に分布の仮定をおかず, 勾配法でAを求める.
+
+## 2 Likelihood-Free Over-complete ICA
+### 2.1 General Framework
+
+![164_01](https://github.com/wataoka/papersheet2md/blob/main/images/164_01.png?raw=true)
+
+(数式的な)モデルは一般的なICAモデルの以下を考えている.
+	x = As		(1)
+そして, フレームワークとしては, 上の図のように, 独立成分を生成するノイズをz, 独立成分をs, 観測変数であるmixturesをxとして, z→sを4層のMLP, s→xを式(1)としている.
+
+学習するパラーメータはAとθ(MLPの重み)なわけだが, それは以下のようにMMDを最小化するように勾配法を適応することで学習する.
+
+![164_02](https://github.com/wataoka/papersheet2md/blob/main/images/164_02.png?raw=true)
+
+#### Algorithm1
+ガウスノイズからzのミニバッチをサンプル
+zをMLPに入力し, sを得る.
+観測変数の分布p(x)からxのミニバッチをサンプル
+それらのミニバッチで式(3)を最適化する
+最大イテレーションに達するまで1-4を繰り返す. 
+
+### 2.2 Practical Considerations
+Sparsity
+大体において混合行列Aはスパースになるので, 式(3)にLASSO正則化を加えた.
+LASSO正則化のsoft閾値として, stochastic proximal gradient method[Nitanda2014]を用いた.
+
+Insufficient data
+データが十分に存在しない場合は独立成分に対してパラメトリックな仮定を置くのも有効.
+混合ガウス分布でモデル化し, reparameterization tricなどを上手く使って学習すれば良い.
+
+## 3 Applications in Causal Discovery
+### 3.1 Causal Discovery under Measurement Error
+[Zhang+2018]によって, 線形性と非ガウスの仮定の下なら因果構造が識別可能であることが証明されている. 
+
 ## From Softmax to Sparsemax: A Sparse Model of Attention and Multi-Label Classification
 
 wataokaの日本語訳「SoftmaxからSparsemaxへ: attentionのスパースモデルとマルチラベル分類」

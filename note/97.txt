@@ -1,0 +1,78 @@
+## 概要
+- 因果グラフがgivenの時の因果を含んだ生成モデルの学習
+- 生成アーキテクチャがgivenの因果グラフと一致しているなら, 敵対的学習は真の観測分布と介入分布の生成モデルを学習することに使えることを示した.
+- 顔の属性情報が与えられた時, そんな顔を生成できる.
+- 2つのステップでこの問題に取り込む.
+  - 因果グラフと整合性のあるNNを用いて, 二値ラベル上の因果暗黙的生成モデルを生成器として訓練する.
+  - causalGAN
+
+![97_01](https://github.com/wataoka/papersheet2md/blob/main/images/97_01.png?raw=true)
+
+## 4 Causal Implicit Generative Models
+Implicit generative model[28]は明示的なパラメータなしに, 分布からサンプリングすることに使われる.  (GANがその成功例) しかし, 介入分布からのサンプリングはできない. Causal Implicit Generative Modelはそれができる.
+
+因果グラフが与えられており, それぞれに対応する構造方程式をニューラルネットで近似するだけ.
+
+## 5 Causal Generative Adversarial Networks
+### 5.1 Causal Implicit Generative Model for Binary Labels
+Causal Controllerはラベル集合において条件付けしたり介入したときに画像がどの分布からサンプルされるかをコントロールするためにある. 4章で説明済み.
+
+### 5.2 CausalGAN Archtecture
+最適化されたgeneratorは画像分布で条件づけられたラベルを出力する.
+Causal Controllerは事前学習済みで, アップデートしない.
+
+Labelerはデータセットの画像のラベルを推定することで訓練するモデル.
+Anti-Labelerはgeneratorから生成された画像のラベルを推定することで訓練するモデル.
+
+Generatorを最適化する際, 3つの目的がある.
+- discriminatorを騙すようにすることで, realな画像を生成する.
+- Labelerに正しく分類されようとすることで, L_G通りの画像を生成する.
+- Anti-Labelerを騙すようにすることで, ラベリングしやすい非現実的な画像分布になることを避ける.
+
+手法のまとめ
+- 構造方程式を近似
+  - 因果グラフはgiven
+  - f_{x_i}の部分はニューラルネット
+  - 学習方法はDiscriminatorを用意して敵対的学習.
+  - “Improved training of wasserstein gans”を参考に学習.
+  - zから属性を出力するgeneratorをCausal Controllerと呼ぶ.
+- Causal GANを学習.
+  - Generator: Causal Controllerから生成された属性から画像を生成する.
+    - Discriminatorの損失を最大化するように学習することで, 実データっぽい画像を生成.
+    - Labelerの損失を最小化するように学習することで, 画像が属性に従っていく. (Labelerに属性を見破られようとする.)
+    - Anti-Labelerの損失を最大化するように学習することで, ラベリングしやすい非現実的な生成画像分布にならないようにする. 
+  - Discriminator: 生成画像か実画像かを見分ける.
+  - Labeler: 実画像から属性を推定.
+  - Anti-Labeler: 生成画像から属性を推定.
+
+# 8 Result
+## 8.1 Dependence of GAN Behavior on Causal Graph
+以下の3つのどれか1つからサンプルされたデータに対してのcausal implicit generative modelの収束を調べた.
+- “line”: X→Y→Z
+- “collider”: X→Y←Z
+- “complete”: X→Y→Z, X→Z
+親がn個あるノードは外生変数1個と親n個の計n+1個のノードから計算される. それぞれのモデルに対して20回サンプルし, 平均値を記載している.
+
+記載されているgeneratorは6つ
+- line: lineの因果構造を持ったcausal controller
+- collider: colliderの因果構造を持ったcausal controller
+- complete: completeの因果構造を持ったcausal controller
+- FC3: 外生変数から全属性を出力する3層のnn
+- FC5: 外生変数から全属性を出力する5層のnn
+- FC10: 外生変数から全属性を出力する10層のnn
+FC系は因果グラフがわかっていない比較用のgenerator.
+(しかしFC3が結構勝ってるやん...)
+
+![97_02](https://github.com/wataoka/papersheet2md/blob/main/images/97_02.png?raw=true)
+
+## 8.2 Wasserstein Causal Controller on CalabA Labels
+実験で用いたWasserstein Causal Controllerはノイズを連続一様分布からサンプルしているが, 出力のラベルはほとんどが0か1付近に存在しているので, ほぼほぼ離散分布として機能してくれた.
+
+Causal Graph毎にどのようにtotal variational distanceが収束していくかを観測した.
+
+![97_03](https://github.com/wataoka/papersheet2md/blob/main/images/97_03.png?raw=true)
+
+8.3 CausalGAN Results
+条件付き分布と介入分布の違いを確認した.
+- 髭で条件付けした時, 髭の男しか生成されない
+- 髭で介入した時, 髭の男も髭の女も生成された.

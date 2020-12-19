@@ -1,0 +1,63 @@
+## 概要
+- 他の属性を固定し, 人種や性別などの属性を変化させた画像を生成するためのオートエンコーダーを提案した.
+- そのオートエンコーダーを用いて商用に公開されている画像認識器のcounterfactual fairnessを測定した.
+
+## 手法 Counterfactual Data Symthesis
+### Problem Formulation
+- Y: 予測器
+- x: 画像
+- Y(x) = {True, False}
+- A: sensitive attribute (binary)
+
+### Face Attribute Synthesis
+- Denton2019の方法とは違って, この論文ではFaderNetworkを使用した.
+  - 理由: GANの潜在空間は容易にentangleされているので, 明示的にdisentangleしているモデルを使用した方がいいと考えたから.
+- FaderNetworkは以下のようなモデル.
+  - エンコーダEを用いてx→E(x)
+  - DiscriminatorがE(x)を用いて属性aを予測
+  - 敵対的学習により, EはDiscriminatorがaを予測できないように学習する.
+  - 結果, E(x)は属性a以外の情報となる.
+  - デコーダDにE(x)とaを入力し, 画像D(E(x), a)を生成.
+  - 結果, aをいじることで属性aを編集した画像を生成できる.
+- Gender SlopesではFaderNetworkを以下の点で変更を加えた.
+  - [Yu+, 2018]を使用して, 顔の領域をセグメントし, その領域以外で編集することを禁止した.
+    - (せこい...)
+  - センシティブ属性aと相関性のありそうな属性もセンシティブ属性と同じように敵対的学習で明にE(x)から分離して調節できるようにし, aを編集する時に固定した.
+     - aをE(x)から分離する時点でこの操作はいらない気もするが, データセットバイアスに対処するために明示的に行ったらしい.
+
+## Experiments
+Computer Vision APIs
+以下のAPIを調べた
+- Google Vision API
+- Amazon Rekognition
+- IBM Watson Visual Recognition
+- Clarifai
+
+### Occupational Images
+職業に関するデータセットを作成した
+- Bureau of Labor Statisticsから129の職種リストを入手
+- Google Image検索でそれらの職業を検索し, ダウンロード.
+  - 顔のない画像は無視している.
+  - 多様な画像を得るために以下のキーワードも組み合わせた.
+    - 男性
+    - 女性
+    - アフリカ系アメリカ人
+    - アジア系
+    - 白人
+    - ヒスパニック
+
+学習用データとして, 
+- 性別操作モデルにはCelebAを用いた.
+  - CelebAは白人の顔が多いので人種操作モデルには適していない.
+- 人種操作モデルにはCelebA+検索とかいろいろ頑張って画像と属性を集めた.
+
+## Results
+- Gender Slope
+  - aの範囲を(-2, 2)として, 7分割し, それらをclassifierに入力する.
+  - aがある値a’を取ったとすると,a’である画像サンプル複数に対してpositiveと出力する確率を算出.
+  - 結果, 7つの確率が得られ, それらをplotすると右肩上がりになる.
+  - 最小二乗法による線形回帰した結果の傾きbをGender SlopeもしくはRace Slopeとして, 一つの評価手法としている.
+  - (equal opportunityじゃなくてdemographic parityな評価指標)
+
+いろいろなAPIにいろいろなセンシティブ属性に対してslopeを計算して表にまとめている.
+そして, 全ての属性に対してモデルのoutputがp値<0.001で相関していることと結論づけた.

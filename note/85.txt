@@ -1,0 +1,115 @@
+## 概要
+- counterfactual fairnessを定義した.
+- counterfactual fairnessはindividual fairness
+- 実世界と反実世界(別のdemographicグループに属す世界)において決定が同じという直感を捉えている.
+- low schoolの実データにおいて提案するフレームワークが成功したことを示した.
+
+## 2 Background
+### 2.2 Causal Models and Counterfactuals
+causal modelは次を満たす三つ組(U, V, F)
+- Vは観測変数集合
+- Uは潜在背景変数集合で, 他のどの変数にも引き起こされない.
+- Fは関数集合{f1,...,fn}で, Vi∈Vに対してVi=fi(pai, U_pai).
+  - paiはViの親変数集合
+  - U_apiはViの潜在背景変数集合
+  - それぞれの方程式は構造方程式(structural equations)と呼ばれる.
+
+変数Viに対する介入(intervention)とは, 
+構造方程式Vi = fi(pa_i, U_{pa_i})をVi=vに置き換えること.
+
+そもそも構造方程式の集合Fを知っているというのはものすごく強い仮定ではあるが, それによってcounterfactualな量を計算することができる.
+
+counterfactualはZに関する方程式をZ=zに置き換えた状況において, U=uが与えられた時のYの解としてモデル化される. これをY_{Z←z}(u)と書いたり, 簡潔にY_Zと書いたりする.
+
+Counterfactual inferenceは次の3step.
+1. Abduction: Uの事前分布P(U)について, evidence Wで事後分布P(U|W)を計算する.
+2. Action: 構造方程式におけるZを介入値zに変更する. 変更後の方程式をFzとする.
+3. Prediction: Fzを用いて残りのVの値を計算する.
+
+## 3 Counterfactual Fairness
+A: センシティブ属性, X: 残りの属性, Y: ラベル, Y^: predictorとし, 因果モデル(U, V, F) where V:=A∪Xが与えられたとする.
+この時, 以下を満たせば, predictor Y^はcounterfactually fair.
+
+![85_01](https://github.com/wataoka/papersheet2md/blob/main/images/85_01.png?raw=true)
+
+### 3.2 Implications
+Lemma 1.
+Gをmodel(U, V, F)の因果グラフとする. その時, Y^がAの非子孫から予測する関数であれば, Y^はcounterfactually fairである.
+
+## 4 Implementing Counterfactual Fairness
+Y^を因果グラフにおいてAの非子孫の関数に制限する.
+
+### 4.1 Algorithm
+AlgorithmはデータセットDと因果モデルMを受け取る.
+1. 各データ点に対して, m個のMCMCサンプルU1(i),...,Um(i) ~ P_M(U|x(i), a(i))をサンプルする.
+2. D’をaugmented dataとし, Dにおけるデータ点(a(i), x(i), y(i))をm個のデータ集合{(a(i), x(i), y(i), u(i)j)}に置き換える.
+3. θ^ ← argmin_θ (sigma L)
+
+![85_02](https://github.com/wataoka/papersheet2md/blob/main/images/85_02.png?raw=true)
+
+#### Deconvolution perspective
+(deconvolutionはおそらくdisentanglement的な意味で言ってる？)
+このアルゴリズムはdeconvolutionアプローチだと理解することができる. 要するに, 観測変数A ∪ Xが与えられた時に, 潜在的なソースUを抽出し, 予測モデルに組み込んでる.
+
+counterfactualな仮定はデータからfairな潜在ベクトルを抽出する系の全ての手法の基礎として組み込まれるべき. Louizos et al.はP(U|X, A)を抽出するために, DAG A→X←Uを用いた. Xが与えられた下でUとAは独立なので, この制約はP(U|A=a, X)=P(U|A=a’, X)を満たすような事後分布P(U|X, A)を生成することになる. しかし, これはcounterfactual fairnessの必要条件でも十分条件でもない. AとUが与えられたXのモデルは因果的に正当化されなければならない.
+
+モデルMは与えられたUとpa_i間の関係に依存する経験損失によって学習することができる. 要するに, Mで学習される. Y^ではない.
+
+### 4.2 Designing the Input Causal Model
+
+完全な決定的モデルを指定する必要はなく, 構造方程式は条件付き分布として緩和できる.
+特に, counterfactual fairnessの概念は強さが増す3段階の仮定の下で保持される. (level3が最も強い仮定)
+
+Level 1: Y^はAの非子孫な観測のみを用いて構築される. これは, 一部の因果関係を使うやり方だが, ほとんどの問題において, 完全にAに非子孫な観測などほとんどない. (ほとんどにおいて属性はセンシティブ属性の下流)
+
+Level 2: 潜在背景変数は観測可能な変数の非決定的原因として機能し, 明確なドメイン知識に基づいている. (観測可能な変数は潜在背景変数によって非決定的)
+
+Level 3: 潜在変数を持った完全に決定的モデルを仮定する. 例えば, 分布P(Vi | pa_i)は誤差モデルVi = fi(pa_i)+eiとして扱われる. 誤差項eiは観測変数から計算されたとしてY^への入力となる. これはfairな予測器Y^によって抽出された情報を最大化する.
+
+### 4.3 Further Considerations on Designing the Input Causal Model
+例えば, counterfactual fairnessの定義は
+P(Y^=1 | do(A=a)) = P(Y^=1 | do(A=a’))
+とかだといけないのか？
+(つまり, センシティブ属性に対して介入した時のY^への効果の平均で, 個人ではない.)
+
+これは公平である保証がない. なぜならば, 半分の個人がnegativeな差別を受けていて, 半分の個人がpositiveな差別を受けていたとしても等式をみてしてしまうから.
+
+## 5 Illustration: Law School Success
+タスク: LSAT, GPAからFYAを予測する.
+- LSAT: 入学試験の成績
+- GPA: 入学前の成績
+- FYA: 卒業年次の成績 (target)
+
+Level1では, LSAT, GPA, FYAはraceとsexでバイアスされているから, counterfactually fairなpredictorを構築するためにはLSAT, GPA, FYAという観察データを使用することはできない. 
+
+Level2では, 学生の知識(K)という潜在変数はGPA, LSAT, FTAに影響していると仮定する. 下記のモデルについて, 観測された学習セットを用いてKの事後分布を推論する. Kを用いて構築された予測器のことをFair Kと呼ぶ.
+
+![85_03](https://github.com/wataoka/papersheet2md/blob/main/images/85_03.png?raw=true)
+
+Level3では,GPA, LSAT, FYAをraceやsexに依存しない誤差項を持つ連続変数としてモデル化する(raceやsexは順番に互いに相関している可能性はある). つまりこんな感じ.
+
+![85_04](https://github.com/wataoka/papersheet2md/blob/main/images/85_04.png?raw=true)
+
+まず, raceとsexを使用し, GPAとLSATを予測する二つのモデルをfitさせることによって, 誤差項を推定する. (つまりUの推定)
+	ε_G = GPA - Y^_GPA
+	ε_L = LSAT - Y^_LSAT
+この予測誤差項をε_G, ε_LをFYAの予測のために使用する.
+
+順に
+- 全ての仮定を満たしていない. (Full)
+- Lv1 (Unaware)
+- Lv2 (Fair K)
+- Lv3 (Fair Add)
+の結果
+↓
+#### Accuracy
+- Fullモデルはraceとsexを使用して, 正確にFYAを再構成しているのでRMSEはもっとも低く抑えられているが, fairにはならない.
+- Unawareモデルはunfairな変数GPA, LSATを使用しているが, raceとsexは使用していないので, FullモデルよりRMSEは高くなってしまっている.
+- 一つ目の提案モデルであるFair Kはlevel2の仮定が置かれており, RMSEはもっとも高い. 
+- Fair AddはLevel3の仮定が置かれており, Fair Kより少しRMSEが低く抑えられている.
+
+#### Counterfactual Fairness
+ベースライン手法がcounterfactually fairであるかどうかをempiricallyにテストしたい. そのために, Figure2のLevel2のグラフが真のモデルであると仮定した. そして, 観測データを用いて因果モデルのパラメータをfitさせ, そこからのサンプルによってcounterfactual fairnessを評価した. 具体的には観察された人種と性別, また反実仮想の人種や性別の変数のいずれかを与えられたモデルからサンプルを生成する. そして, 実データと反実データの両方でモデルをfitさせる. FYAの予測分布がそれぞれに対してどれほど変化するかをプロットする. Figure2において青色の分布は実データに対するFYAの予測で, 赤色の分布は反実データに対するFYAの予測.
+Fullモデルはsexをのぞいてcounfatectual fairnessが悪い.
+UnawareモデルもFullモデルよりマシだが大体同じ.
+なぜ, sexに対してモデルはfairになるのかを見るために, counterfactual dataを生み出すDAGの重みを見た. (male, female)からGPAへの重みは(0.93, 1.06)で(male, female)からLSATへの重みは(1.1, 1.1)となっていた. つまり, sexとGPA/LSATの間における因果関係が非常に弱いために, 単にsexとの関係では公平になっていた.

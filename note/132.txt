@@ -1,0 +1,19 @@
+## 概要
+目的はセグメンテーションの向上.
+
+それを実現するために, セグメントした層を一定確率で削除し, 削除された物がreal dataであるかどうかをdiscriminatorに判断させることで, より自然な削除(つまりより自然なセグメント)ができるようになっていく.
+
+
+### 仮説
+オブジェクトを削除すれば自然であるが, ランダムパッチを削除すれば不自然である. このように「オブジェクトを綺麗にセグメントできること」<=>「そのオブジェクトを削除した時反実仮想画像となる」という仮説を考えている.
+
+![132_01](https://github.com/wataoka/papersheet2md/blob/main/images/132_01.png?raw=true)
+
+## アーキテクチャ
+画像をエンコードし, K個のレイヤーでセグメントする. 一定確率pでcombineし, 1-pでcombineしない. そうして生成されが画像をDiscriminatorが識別することで, より自然に削除できるようになっていく.
+
+![132_02](https://github.com/wataoka/papersheet2md/blob/main/images/132_02.png?raw=true)
+
+レイヤーが出力したセグメントの例
+
+![132_03](https://github.com/wataoka/papersheet2md/blob/main/images/132_03.png?raw=true)
