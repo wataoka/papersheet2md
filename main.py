@@ -58,7 +58,7 @@ def main(filename='output.md'):
             assert not title_en == ''
             print(f'\n## {title_en}', file=f)
             if not title_ja == '':
-                print(f'wataokaの日本語訳: {title_ja}', file=f)
+                print(f'wataokaの日本語訳「{title_ja}」', file=f)
             if not tag == '':
                 print(f'- 種類: {tag}', file=f)
             if not conf == '':
