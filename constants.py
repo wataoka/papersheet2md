@@ -24,5 +24,5 @@ for filename in NOTE_FILENAME_LIST:
     NOTE_FILEID_LIST.append(int(filename.split('.')[0]))
 
 # ignore
-IGNORE_ID_LIST : list = [ 69,  70,  72,  75,  80,  84,  92,  93, 105, 107,
+IGNORE_ID_LIST : list = [ 69,  70,  72,  75,  80,  84,  92,  93, 107,
                          108, 115, 116, 122, 166, 167, 178, 134, 136, 182]
