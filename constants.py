@@ -23,6 +23,9 @@ for filepath in NOTE_FILEPATH_LIST:
 for filename in NOTE_FILENAME_LIST:
     NOTE_FILEID_LIST.append(int(filename.split('.')[0]))
 
+# top3
+TOP3_ID_LIST: list = [164, 85, 126]
+
 # ignore
 IGNORE_ID_LIST : list = [ 69,  70,  72,  75,  80,  84,  92,  93, 107,
                          108, 115, 116, 122, 166, 167, 178, 134, 136, 182]
