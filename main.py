@@ -31,7 +31,7 @@ def get_sheet(sheet_name):
 
 def check_note(row):
     # check note
-    if not str(row+2) in NOTE_FILEID_LIST:
+    if not row+2 in NOTE_FILEID_LIST:
         return None
     # read note
     with open(f'note/{row+2}.txt', 'r') as f:
@@ -97,7 +97,7 @@ def main(filename='output.md'):
             if len(row_df) == 0:
                 break
             # check ignore
-            if str(row+2) in IGNORE_ID_LIST+NOTE_FILEID_LIST:
+            if row+2 in IGNORE_ID_LIST+NOTE_FILEID_LIST:
                 continue
 
             # set values
