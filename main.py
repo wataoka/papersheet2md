@@ -30,6 +30,12 @@ def get_sheet(sheet_name):
     return sheet
 
 
+def get_note(id):
+    with open(f'note/{id}.txt', 'r') as f:
+        data = f.read()
+    return data
+
+
 def check_note(row):
     # check note
     if not row+2 in NOTE_FILEID_LIST:
@@ -154,6 +160,10 @@ def main(filename='output.md'):
             print(f'## {count}本目の論文: {title_en}\n', file=f); count+=1
             print_basic_info(row_df, f)
             print_contents(row_df, f)
+        
+        note = get_note('ending')
+        assert note is not None
+        print(note, file=f)
 
     print('Done!')
 

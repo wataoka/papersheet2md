@@ -21,7 +21,9 @@ NOTE_FILEID_LIST   : list = []
 for filepath in NOTE_FILEPATH_LIST:
     NOTE_FILENAME_LIST.append(filepath.split('/')[-1])
 for filename in NOTE_FILENAME_LIST:
-    NOTE_FILEID_LIST.append(int(filename.split('.')[0]))
+    id = filename.split('.')[0]
+    if id.isdecimal():
+        NOTE_FILEID_LIST.append(int(id))
 
 # top3
 TOP3_ID_LIST: list = [164, 85, 126]
