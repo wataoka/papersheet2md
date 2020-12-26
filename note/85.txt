@@ -1,3 +1,35 @@
+## 前提知識
+機械学習には公平性(以下, fairness)という分野があります. fairnessは機械学習による自動的な判断システムが特定のグループが不当な判断を行わないようにする分野です. 例えば, ローンの申請を認めるかどうかのシステムにおいて, 男性には優しく女性には厳しいなんてことがあれば大問題です. そのようなことに陥らないように, アルゴリズム側で正則化などをかけたり, データ自体に前処理を加えたり行います.
+
+Fairnessを語る上で「何を持って公平か」という公平性の定義は避けることができません. ここでは, 代表的な公平性の定義を2つ紹介します. (本当は10以上存在している.)
+
+### Demographic Parity
+簡単のため二値分類とします.
+- $\hat{Y}$: 分類器の予測
+- $S$: センシティブ属性 (例:女性or男性)
+とした時, 以下を満たすならその分類器はdemographic parityを満たす.
+
+```math
+P(\hat{Y}|S=0) = P(\hat{Y}|S=1)
+```
+
+つまり, 予測分布がセンシティブ属性間において不変であるべきという定義です. もう少し簡単に言えば, 分類器が0と出力する確率も1と出力する確率もセンシティブ属性間において同じであるべきという定義です.
+
+### Equal Opportunity
+簡単のため二値分類とします.
+- $\hat{Y}$: 分類器の予測
+- $Y$: ラベル
+- $S$: センシティブ属性 (例:女性or男性)
+とした時, 以下を満たすならその分類器はequal opportunityを満たす.
+
+```math
+P(\hat{Y}=1|Y=1,S=0) = P(\hat{Y}=1|Y=1,S=1)
+```
+
+つまり, true positive rateがセンシティブ属性間において不変であるべきという定義です. もう少し簡単に言えば, 答えが1である時, 分類器が1と出力する確率がセンシティブ属性間において同じであるべきという定義です.
+
+上記のように, 公平性の定義には様々なものが存在します. この論文では, 新しい公平性の定義`counterfactual fairness`を提案しました.
+
 ## 概要
 - counterfactual fairnessを定義した.
 - counterfactual fairnessはindividual fairness
@@ -5,6 +37,8 @@
 - low schoolの実データにおいて提案するフレームワークが成功したことを示した.
 
 ## 2 Background
+読むのめんどくさい方は3まで飛ばしてOK.
+
 ### 2.2 Causal Models and Counterfactuals
 causal modelは次を満たす三つ組(U, V, F)
 - Vは観測変数集合
@@ -27,13 +61,17 @@ Counterfactual inferenceは次の3step.
 3. Prediction: Fzを用いて残りのVの値を計算する.
 
 ## 3 Counterfactual Fairness
-A: センシティブ属性, X: 残りの属性, Y: ラベル, Y^: predictorとし, 因果モデル(U, V, F) where V:=A∪Xが与えられたとする.
-この時, 以下を満たせば, predictor Y^はcounterfactually fair.
+- A: センシティブ属性
+- X: 残りの属性
+- Y: ラベル
+- $\hat{Y}$: 分類器の予測
+とし, 因果モデル(U, V, F) where V:=A∪Xが与えられたとする. この時, 以下を満たせば, 分類器はcounterfactually fair.
 
 ![85_01](https://github.com/wataoka/papersheet2md/blob/main/images/85_01.png?raw=true)
 
-### 3.2 Implications
-Lemma 1.
+つまり, ある人物(X,A=0)がもし(X,A=1)だったら(そんなパラレルワールドがあったら), 分類器はどちらの世界でもその人物に対する予測値は同じであるべきという公平性の定義となります.
+
+#### Lemma 1.
 Gをmodel(U, V, F)の因果グラフとする. その時, Y^がAの非子孫から予測する関数であれば, Y^はcounterfactually fairである.
 
 ## 4 Implementing Counterfactual Fairness
@@ -113,3 +151,8 @@ Level3では,GPA, LSAT, FYAをraceやsexに依存しない誤差項を持つ連�
 Fullモデルはsexをのぞいてcounfatectual fairnessが悪い.
 UnawareモデルもFullモデルよりマシだが大体同じ.
 なぜ, sexに対してモデルはfairになるのかを見るために, counterfactual dataを生み出すDAGの重みを見た. (male, female)からGPAへの重みは(0.93, 1.06)で(male, female)からLSATへの重みは(1.1, 1.1)となっていた. つまり, sexとGPA/LSATの間における因果関係が非常に弱いために, 単にsexとの関係では公平になっていた.
+
+## wataokaのコメント
+Counterfactual fairnessの定義は非常に直感的で説得力のある定義だと感じます. そして, counterfactual fairnessの定義であるセンシティブ属性に対する介入がラベルに影響しないということは, 因果推論におけるセンシティブ属性のラベルに対する**因果効果**がないと言い換えることができます. センシティブ属性が因果的に結果と繋がっていないことは機械学習サービスを提供する側としては非常にユーザー側への力強い主張となるかと思います.
+
+やはり, counterfactual quantityを計測することが非常に困難であることがネックになるかと思います. どれほど識別可能であるのか, boundは取れるのかなどの理論的な解析は[Wu et al.の論文 ](https://www.ijcai.org/Proceedings/2019/199)を参照されたいです. 
