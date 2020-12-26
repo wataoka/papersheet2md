@@ -2915,6 +2915,6 @@ data: https://github.com/Davidzhangyuanhan/CelebA-Spoof
 綿岡晃輝より
 
 - [Twitter](twitter.com/wataoka)
-- [Youtube]()
+- [Youtube](https://www.youtube.com/channel/UClZfnIaWYR_WgrWLVu4muvw)
 - [Qiita](qiita.com)
 - [Home page](wataoka.github.io)
