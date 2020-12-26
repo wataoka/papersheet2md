@@ -41,6 +41,8 @@ def check_note(row):
 
 
 def print_basic_info(row_df, f):
+
+    # set
     title_en = row_df['論文名'].values[0]
     title_ja = row_df['論文名(日本語)'].values[0]
     tag      = row_df['タグ'].values[0]
@@ -48,6 +50,7 @@ def print_basic_info(row_df, f):
     url      = row_df['リンク'].values[0]
     date     = row_df['投稿日付'].values[0]
 
+    # print
     if not title_ja == '':
         print(f'wataokaの日本語訳「{title_ja}」', file=f)
     if not tag == '':
@@ -62,11 +65,14 @@ def print_basic_info(row_df, f):
 
 
 def print_contents(row_df, f):
+
+    # set
     abst     = row_df['概要'].values[0]
     method   = row_df['手法'].values[0]
     result   = row_df['結果'].values[0]
     comment  = row_df['コメント'].values[0]
 
+    # print
     if not abst == '':
         print(f'### 概要\n', file=f)
         print(f'{abst}\n', file=f)
@@ -111,7 +117,6 @@ def main(filename='output.md'):
             print(note, file=f)
 
         print('# 論文100本解説\n', file=f)
-        # sheet + note
         for id in NOTE_FILEID_LIST:
             if id in TOP3_ID_LIST:
                 continue
