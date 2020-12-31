@@ -1,7 +1,7 @@
-## 概要
+### 概要
 semi-supervised editing手法. GANはデータセットバイアス(e.g.物体が中心にくる)に影響されているが, 潜在空間で「steering」することで, 現実的な画像を作成しながら分布を移動することができる.
 
-## 1 Introduction
+### 1 Introduction
 #### main findings
 - GANの潜在空間の中でのsimple walkで, 出力画像空間におけるカメラモーションや色変換などを可能にする. そのsimple walkは属性ラベルやラベルやソース画像とターゲット画像のラベル無しで学習できる.
 - 線形walkは非線形walkと同様に効果的. モデルを明示的に学習しなくてもそうなるようになってる.
@@ -9,13 +9,13 @@ semi-supervised editing手法. GANはデータセットバイアス(e.g.物体�
 - 変換は汎用フレームワーク. BigGAN, StyleGAN, DCGANなどで行える.
 - 歩行軌跡の訓練により, 操縦性を向上させる.
 
-## 2 Related work
+### 2 Related work
 Applications of latent space editing
 - Denton, 2019:	顔属性検出器のバイアス測定
 - Shenet, 2019:	潜在空間のdisentanglementの可視化
 - この論文:	データセットバイアス測定
 
-## 3 Method
+### 3 Method
 目標: Figure 2のように, 潜在空間内を移動することで, 出力空間内の変換を実現する
 
 この目標は入力空間における変換が出力空間における等価変換をもたらすという等変量における考え方だと捉えることができる. (c.f. Hinton(2011), Cohen(2019), Lenc&Vedaldi(2015))
@@ -28,8 +28,8 @@ edit(G(z), α)は, 例えば生成画像G(z)をα倍ズームしたものとか.
 - edit(G(z), α)が計算可能ということはそのような画像を作れること自体に価値はない.
 - なので, steerabilityの評価からデータセットバイアスにつなげている.
 
-## 4 Experiments
-### 4.1 What Image Transformatinos can we achieve in latent space?
+### 4 Experiments
+#### 4.1 What Image Transformatinos can we achieve in latent space?
 walkさせた時に2つの失敗を観測した.
 - unrealisticになってしまう.
 - 所望のtransformが全然できていない
@@ -42,3 +42,13 @@ ImageNetのデータセットにある画像に限界があるからではない
 興味深いことに, walkがoutputに影響を与える量は画像のclassに依存していた. 
 (クラゲは様々な色に変化ができたが, goldfinch(黄色の鳥)はできなかった)
 (噴火する火山は明るさを変えられたが, アルプスは変えられなかった)
+
+### wataokaのコメント
+GANの操縦性というキャッチーな言い方がとても好き.
+
+これは自分の勝手な妄想だが,
+- GANの潜在変数をいじって編集したい！
+- 考えた！
+- しかしこれ編集自体に価値ないよな... zoomとかできるし...
+- よし, この技術でデータセットバイアス測ろう！ちょっとうまくいかんやつもあるし！
+みたいな研究の流れなんじゃね？と思っている. もしそうだとしたら, 逃げ方がうますぎる. これはディスっているのではなく, 研究における発表の仕方, ひいてはプロモーションの仕方は言い方次第でとても変わることを学べた. 自分も何かを発表したい時は完璧な言い方を一度は模索しようと思う.

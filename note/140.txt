@@ -1,4 +1,4 @@
-## 概要
+### 概要
 - オートエンコーダーの潜在空間をdisentanglingし, 1つの属性だけを変化させる手法Matrix Subspace Projection (MSP)を提案.
 - MSPのいいところ
   - MSPは既存手法よりシンプル.
@@ -8,7 +8,7 @@
   - 画像やテキストなど多様なドメインに適応可能.
 - 異なるドメインで実験を行い, 人間による評価と自動的な評価を行い, ベースラインよりよかった.
 
-## 1. Introduction
+### 1. Introduction
 提案手法は以下の2つを特徴を持つ
 - ランダムシード(しかし属性はあり)からサンプルが生成される.
 - ある特定の属性と入力サンプルを与えると, 入力サンプルのその属性を修正することができる.
@@ -18,11 +18,11 @@ Contributions
 - 複数属性に対して精度のいいdisentanglementを可能にした.
 - コードを公開している.
 
-## 2. Related Work
+### 2. Related Work
 潜在ベクトルから特定の属性情報を分離する問題としてよく用いられる方法は, zの属性を予測するネットワークを用いて, 敵対的学習を行い, 特定の情報を消去し, 所望の属性のみにする方法. この手法の欠点は, 再構成誤差とトレードオフになっており, 学習率のスケーリングが大変であること.
 
-## 3. Method
-### 3.1. Problem Formulation
+### 3. Method
+#### 3.1. Problem Formulation
 D: データセット
 x: 画像 (n次元)
 y: 属性 (k次元)
@@ -39,24 +39,24 @@ zの属性がynに変わるように置換した結果をznとすると,
 	xn = G(K(z, yn))
 結果得られた画像xnの属性はyでなくynであると予測されるようになるが, それ以外の情報は保存されている.
 
-### 3.2. Learning Disentangled Latent Representations via Matrix Subspace Projection
+#### 3.2. Learning Disentangled Latent Representations via Matrix Subspace Projection
 潜在変数zとinvertibleな任意の関数が与えられた時, 
-Hはzを新しい線形空間に飛ばしてくれる. (z^=H(z))
+Hはzを新しい線形空間に飛ばしてくれる. ($\hat{z}$=H(z))
 
 どのような線形空間かというと, 以下の(a)と(b)を満たす.
-    (a) z^に行列Mをかけることでyに近づけることができる線形空間.
+    (a) $\hat{z}$に行列Mをかけることでyに近づけることができる線形空間.
     (b) 直交行列U = [M, N]が存在する.
-ただし, NはMの零空間で, Nz^はy以外の情報(s^とする)となる.
+ただし, NはMの零空間で, N$\hat{z}$はy以外の情報($\hat{s}$とする)となる.
 
-要するにHはzからy, zからs^への変換において, ラスト一歩手前まで持っていった感じ.
-あとは行列で線形変換すればyとかsになれるよというギリギリのz^まで持っていくのがH.
+要するにHはzからy, zから$\hat{s}$への変換において, ラスト一歩手前まで持っていった感じ.
+あとは行列で線形変換すればyとかsになれるよというギリギリの$\hat{z}$まで持っていくのがH.
 
 invertibleなHを省くことで, GとFにHの機能を学習させると考えることができる.
 Mに関しては直交行列の一部である必要があるため, GとFにMの機能を学習させることはできない.
 
 Mを最適化するために以下をする必要がある.
-- y^をyに近づける.
-- s^がz^からの情報を持たないようにするためにs^のノルムを小さくする.
+- $\hat{y}$をyに近づける.
+- $\hat{s}$が$\hat{z}$からの情報を持たないようにするために$\hat{s}$のノルムを小さくする.
 
 ![140_01](https://github.com/wataoka/papersheet2md/blob/main/images/140_01.png?raw=true)
 
@@ -69,17 +69,17 @@ L2に関しては次のように式変形することで計算可能にする.
 
 なので,
 
-Fを用いてxからz^が得られ,
-Uを用いてz^から[y^;s^]が得られる.
+Fを用いてxから$\hat{z}$が得られ,
+Uを用いて$\hat{z}$から[$\hat{y}$;$\hat{s}$]が得られる.
 
 そして,
 
-[y^;s^]を[yn;s^]に置き換えて, 
+[$\hat{y}$;$\hat{s}$]を[yn;$\hat{s}$]に置き換えて, 
 Uの逆行列(Uの転置)を用いてznが得られ,
 Gを用いてznからxnが得られる.
 
-## 4. Evaluation
-### 4.1. Matrix Subspace Projection in VAE
+### 4. Evaluation
+#### 4.1. Matrix Subspace Projection in VAE
 vanilla VAEに適用した. 
 また, 生成画像をシャープにするためにadditional PatchGANを使用した.
 
@@ -110,7 +110,7 @@ Fader netやattGANではメガネに対する編集に失敗し, MSPは成功し
 
 結果としては「MSPを入れた時クオリティが最も悪い」という帰無仮説はp<0.03で棄却された.
 
-### 4.3 Evaluation of Disentanglement
+#### 4.3 Evaluation of Disentanglement
 Amazon Mechanical Turkを用いて手動ラベリングを行った.
 3つのレベルのリッカート尺度(perfect, recognisable, andunrecognisable/unchanged)で属性変換が成功しているかどうかを参加者に評価してもらった.
 
@@ -121,3 +121,6 @@ Amazon Mechanical Turkを用いて手動ラベリングを行った.
 また定量的評価として, ある属性を変更した際, それと相関性のある属性がどれほどclassifierの出力に影響を与えるかを測定した. 例) 男性を変化させた時に, 髭がどれほど動かなかったかを測定している. 結果として, MSPが最も動かなかった. 
 
 所望の属性は最も動き, それと相関性のある属性が最も動かなかったので, MSPが最もdisentangleできていると結論づけている.
+
+### wataokaのコメント
+非常に読んでいて楽しかった. ベスト3に載せるか迷ったほど. 実際には計算する必要のない架空の行列Nを理論上の計算でこねくり回して, 結局は行列Mに関する最適化だけでいいよって流れがとても面白い. ただし, 無情報化するためにのノルム0とし, そうすることでdisentangleの達成というのは, 必要条件しか満たしていなさそうな気がする.

@@ -1,15 +1,15 @@
-## 概要
+### 概要
 - 他の属性を固定し, 人種や性別などの属性を変化させた画像を生成するためのオートエンコーダーを提案した.
 - そのオートエンコーダーを用いて商用に公開されている画像認識器のcounterfactual fairnessを測定した.
 
-## 手法 Counterfactual Data Symthesis
-### Problem Formulation
+### 手法 Counterfactual Data Symthesis
+#### Problem Formulation
 - Y: 予測器
 - x: 画像
 - Y(x) = {True, False}
 - A: sensitive attribute (binary)
 
-### Face Attribute Synthesis
+#### Face Attribute Synthesis
 - Denton2019の方法とは違って, この論文ではFaderNetworkを使用した.
   - 理由: GANの潜在空間は容易にentangleされているので, 明示的にdisentangleしているモデルを使用した方がいいと考えたから.
 - FaderNetworkは以下のようなモデル.
@@ -25,7 +25,7 @@
   - センシティブ属性aと相関性のありそうな属性もセンシティブ属性と同じように敵対的学習で明にE(x)から分離して調節できるようにし, aを編集する時に固定した.
      - aをE(x)から分離する時点でこの操作はいらない気もするが, データセットバイアスに対処するために明示的に行ったらしい.
 
-## Experiments
+### Experiments
 Computer Vision APIs
 以下のAPIを調べた
 - Google Vision API
@@ -33,7 +33,7 @@ Computer Vision APIs
 - IBM Watson Visual Recognition
 - Clarifai
 
-### Occupational Images
+#### Occupational Images
 職業に関するデータセットを作成した
 - Bureau of Labor Statisticsから129の職種リストを入手
 - Google Image検索でそれらの職業を検索し, ダウンロード.
@@ -51,7 +51,7 @@ Computer Vision APIs
   - CelebAは白人の顔が多いので人種操作モデルには適していない.
 - 人種操作モデルにはCelebA+検索とかいろいろ頑張って画像と属性を集めた.
 
-## Results
+### Results
 - Gender Slope
   - aの範囲を(-2, 2)として, 7分割し, それらをclassifierに入力する.
   - aがある値a’を取ったとすると,a’である画像サンプル複数に対してpositiveと出力する確率を算出.

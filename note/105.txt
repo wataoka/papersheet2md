@@ -15,7 +15,7 @@ Causal Coarsening Theorem (CCT)を証明。CCTは最小限の実験的努力か�
 manipulator関数を学習する方法を示す. manipulator関数は自動的に視覚的因果においてoptimal manipulationsを実行してくれる.
 
 ### 2. A Theory of visual causal features
-2.2 Generative Models: from micro to macro variables
+#### 2.2 Generative Models: from micro to macro variables
 Definition 1 (Observational Partition, Observational Class)
 振る舞いTに関する集合Iのobservational partition Π_o(T, I) (⊂I)は,
 i~j <=> P(T|I=i)=P(T|I=j)
@@ -33,6 +33,7 @@ visual manipulationは操作man(I=i)である.
 という等価関係に基づく分割である.
 
 ### スライド
+下記スライドが非常にわかりやすかった.
 https://www.slideshare.net/KojinOshiba/visutl-causal-feature-learning
 
 目的: 人間の視覚的な因果を理解すること

@@ -1,4 +1,4 @@
-## 概要
+### 概要
 - 因果グラフがgivenの時の因果を含んだ生成モデルの学習
 - 生成アーキテクチャがgivenの因果グラフと一致しているなら, 敵対的学習は真の観測分布と介入分布の生成モデルを学習することに使えることを示した.
 - 顔の属性情報が与えられた時, そんな顔を生成できる.
@@ -8,16 +8,16 @@
 
 ![97_01](https://github.com/wataoka/papersheet2md/blob/main/images/97_01.png?raw=true)
 
-## 4 Causal Implicit Generative Models
+### 4 Causal Implicit Generative Models
 Implicit generative model[28]は明示的なパラメータなしに, 分布からサンプリングすることに使われる.  (GANがその成功例) しかし, 介入分布からのサンプリングはできない. Causal Implicit Generative Modelはそれができる.
 
 因果グラフが与えられており, それぞれに対応する構造方程式をニューラルネットで近似するだけ.
 
-## 5 Causal Generative Adversarial Networks
-### 5.1 Causal Implicit Generative Model for Binary Labels
+### 5 Causal Generative Adversarial Networks
+#### 5.1 Causal Implicit Generative Model for Binary Labels
 Causal Controllerはラベル集合において条件付けしたり介入したときに画像がどの分布からサンプルされるかをコントロールするためにある. 4章で説明済み.
 
-### 5.2 CausalGAN Archtecture
+#### 5.2 CausalGAN Archtecture
 最適化されたgeneratorは画像分布で条件づけられたラベルを出力する.
 Causal Controllerは事前学習済みで, アップデートしない.
 
@@ -29,7 +29,7 @@ Generatorを最適化する際, 3つの目的がある.
 - Labelerに正しく分類されようとすることで, L_G通りの画像を生成する.
 - Anti-Labelerを騙すようにすることで, ラベリングしやすい非現実的な画像分布になることを避ける.
 
-手法のまとめ
+### 手法のまとめ
 - 構造方程式を近似
   - 因果グラフはgiven
   - f_{x_i}の部分はニューラルネット
@@ -45,8 +45,8 @@ Generatorを最適化する際, 3つの目的がある.
   - Labeler: 実画像から属性を推定.
   - Anti-Labeler: 生成画像から属性を推定.
 
-# 8 Result
-## 8.1 Dependence of GAN Behavior on Causal Graph
+###  8 Result
+#### 8.1 Dependence of GAN Behavior on Causal Graph
 以下の3つのどれか1つからサンプルされたデータに対してのcausal implicit generative modelの収束を調べた.
 - “line”: X→Y→Z
 - “collider”: X→Y←Z
@@ -65,14 +65,14 @@ FC系は因果グラフがわかっていない比較用のgenerator.
 
 ![97_02](https://github.com/wataoka/papersheet2md/blob/main/images/97_02.png?raw=true)
 
-## 8.2 Wasserstein Causal Controller on CalabA Labels
+#### 8.2 Wasserstein Causal Controller on CalabA Labels
 実験で用いたWasserstein Causal Controllerはノイズを連続一様分布からサンプルしているが, 出力のラベルはほとんどが0か1付近に存在しているので, ほぼほぼ離散分布として機能してくれた.
 
 Causal Graph毎にどのようにtotal variational distanceが収束していくかを観測した.
 
 ![97_03](https://github.com/wataoka/papersheet2md/blob/main/images/97_03.png?raw=true)
 
-8.3 CausalGAN Results
+#### 8.3 CausalGAN Results
 条件付き分布と介入分布の違いを確認した.
 - 髭で条件付けした時, 髭の男しか生成されない
 - 髭で介入した時, 髭の男も髭の女も生成された.

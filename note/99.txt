@@ -1,8 +1,8 @@
-## 概要
+### 概要
 
 CausalGAN [Kocaoglu, 2018]の拡張, Causal Fairness-aware GAN(CFGAN)を提案. 与えられた因果関係グラフに基づいて様々な因果関係の公平性を確保しながら分布を学習できる.
 
-## 2. Preliminaly
+### 2. Preliminaly
 
 #### 因果モデル
 causal model [Pearl, 2009]とは次のような三つ組みM={U, V, F}
@@ -17,9 +17,9 @@ causal model [Pearl, 2009]とは次のような三つ組みM={U, V, F}
 - indirect dicrimination
 - counterfactual fairness
 
-## 3. CFGAN
+### 3. CFGAN
 
-### 3.1 Problem Statement
+#### 3.1 Problem Statement
 - 変数
   - V = {X, Y, S}
     - S: センシティブ属性
@@ -32,7 +32,7 @@ causal model [Pearl, 2009]とは次のような三つ組みM={U, V, F}
   - read dataの全ての属性の分布を保護した新しいデータ(x^, y^, s^)を生成する.
   - 様々なcausalベースの基準において, 生成されたデータS^がY^に差別的な影響を与えない.
 
-### 3.2 Model Framework
+#### 3.2 Model Framework
 CFGANは以下を持っている.
   - 2つのgenerator (G1, G2)
   - 2つのdiscriminator (D1, D2)
@@ -57,7 +57,7 @@ CFGANは以下を持っている.
 
 ![99_01](https://github.com/wataoka/papersheet2md/blob/main/images/99_01.png?raw=true)
 
-## CFGAN for Counterfactual Fairness
+### CFGAN for Counterfactual Fairness
 
 - オリジナルの因果モデルと介入因果モデルとのコネクションを考慮する必要がある.
 - このコネクションを反映するために,  G1によって生成されたサンプルとG2によって生成されたサンプルの直接的依存関係を構築する.

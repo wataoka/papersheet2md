@@ -1,4 +1,4 @@
-## 概要
+### 概要
 現実世界ではcar→wheelという出現関係があり, 画像に現れると仮定している. そのようなcausal dispositionを明らかにするような方法を提案した.
 
 この論文は画像内に現れるオブジェクトカテゴリの”causal dispositions”を明らかにする観測可能なfootprintが存在することを示す.
@@ -8,7 +8,7 @@
 - ステップ2
     - 画像の中からobject featuresとcontext featuresを見分ける分類器を使用.
 
-## 1. Introduction
+### 1. Introduction
 
 featuresについて
 - causal features
@@ -38,5 +38,5 @@ featuresについて
 object featuresとanticausal featuresの間には観測可能な統計的依存が存在する.
 context featuresとcausal featuresの間には観測可能な統計的依存がないor非常に弱い,.
 
-## 手法
+### 手法
 画像からobjectとcontextに分離, それぞれをcausal featureなのかanticausalなのかに二値分類.

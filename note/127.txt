@@ -1,8 +1,8 @@
-## 概要
+### 概要
 semi-supervised editing. 鳥とかきのことかを編集している. pixel-wiseな損失では高周波成分をうまく再構成できていないと怒っていた.
 
-## 2 LATENT SPACE DIRECTIONS OF A FACTOR OF VARIATION
-### 2.1 Latent Space Trajectories of an Image Transformation
+### 2 LATENT SPACE DIRECTIONS OF A FACTOR OF VARIATION
+#### 2.1 Latent Space Trajectories of an Image Transformation
 G: 潜在空間→画像空間
 Tt: 画像空間→画像空間 (parametrized by t)
 I = なんかの画像とした時,
@@ -51,3 +51,6 @@ Encoderを学習すればできることだがそうはしない.
 対処するために, transformation Τtを何度も行う多様体上の最適化を提案する.
 
 ![127_05](https://github.com/wataoka/papersheet2md/blob/main/images/127_05.png?raw=true)
+
+### wataokaのコメント
+問題への仮説→改善案という綺麗な研究な気がした. もちろん理論的に証明し切って改善案の提案とかの方がかっこいいが, 現在のディープラーニングに対する理解の推し進め方はこの論文のような形が多く, 理論屋より実験屋が突っ走ったいっときの航空力学の世界を彷彿とさせる.

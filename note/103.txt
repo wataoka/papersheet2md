@@ -1,4 +1,4 @@
-## 概要
+### 概要
 - 潜在変数へのdisentanglementはよく行われているが, 現実世界で意味論的な要素が独立しているとは限らない.
 - 独立の因子を因果因子に変換するためのcausal layersを持っているVAEを提案.
 - Causal VAEと呼ぶ.
@@ -10,7 +10,7 @@
   - CelebA
 - 結果, CausalVAEの因果表現は意味論的に解釈可能で, downstreamタスクに関していい結果だった.
 
-### 情報の流れ
+#### 情報の流れ
 - xはencoderで潜在変数εに変換される.
   - εは多変量正規分布の事前分布p(ε)を持っている.
 - εはcausal layerで因果表現zに変換される.
@@ -19,8 +19,8 @@
 - zはdecoderによってxに変換される.
 
 
-## 3. Method
-### 3.1 Causal Model
+### 3. Method
+#### 3.1 Causal Model
 xからεは普通にencoder
 
 εからzは, 以下のようなLinear Structural Equation modelsを仮定している.
@@ -29,7 +29,7 @@ xからεは普通にencoder
 zはn次元ベクトルで, それぞれが何らかの物理的な意味に対応している.
 Azがzの項でもあることから, ziとzjの因果関係なども記述していることがわかる.
 
-### 3.2 Generative Model
+#### 3.2 Generative Model
 モデルの教師なし学習は識別可能性問題によって不可能.
 ([1]で議論済み)
 
@@ -43,7 +43,7 @@ Azがzの項でもあることから, ziとzjの因果関係なども記述し�
   - 意味論を持つ潜在変数z
   - ノイズ潜在変数ε
 
-### 3.3 Training Method
+#### 3.3 Training Method
 相変わらずELBOを最適化する. (p(x|u)のELBO)
 
 因果隣接行列Aの最適化は, continuous constraint functionを使用.
@@ -58,8 +58,8 @@ AがDAGを形成する値である <=> H(A)=0
 ![103_04](https://github.com/wataoka/papersheet2md/blob/main/images/103_04.png?raw=true)
 
 
-## 5. Experimetns
-### 5.1 Dataset
+### 5. Experimetns
+#### 5.1 Dataset
 #### 5.1.1 Synthetic Data
 - Pendulum (振り子)
   - 3つのエンティティ
@@ -82,14 +82,14 @@ AがDAGを形成する値である <=> H(A)=0
 #### 5.1.2 Benchmark Dataset
 CelebA
 
-## 6 Experiments
+### 6 Experiments
 - 合成データとCelebAで実験した.
 - CausalVAEと既存のdisentangle手法と比較した.
 - 以下の点に重点を置いている.
   - アルゴリズムが解釈可能な表現を学習できているか
   - 潜在変数への介入の結果が因果系の理解と一致しているか
 
-### 6.1 Dataset, Baseliens & Metrics
+#### 6.1 Dataset, Baseliens & Metrics
 Metrics
 ![103_05](https://github.com/wataoka/papersheet2md/blob/main/images/103_05.png?raw=true)
 
@@ -101,7 +101,7 @@ Total Information Coefficient (TIC)
 
 MICはいろいろと分割して相互情報量が最大となる値を採用するmetric. (21世紀の相関)
 
-### 6.2 Intervention experiments
+#### 6.2 Intervention experiments
 何かしらのコンセプトと対応しているzを介入した結果, どんな画像を出力されるかを観測した. (振り子とCelebA)
 
 振り子に関してもCelebAに関しても, しっかりと介入できてることを画像を見せて示した.
@@ -109,5 +109,8 @@ MICはいろいろと分割して相互情報量が最大となる値を採用�
 因果行列Aの学習プロセスをヒートマップの流れで表現し, 真の因果行列に収束していっていることを示した.
 ![103_06](https://github.com/wataoka/papersheet2md/blob/main/images/103_06.png?raw=true)
 
-## reference
+### reference
 [1] Challenging common assumptions ¨ in the unsupervised learning of disentangled representations.
+
+### wataokaのコメント
+潜在変数で因果探索を行うところは良いと思うが, 介入の方法については微妙？定性的評価の時点で少し所望の動きができていないところがある. 現時点でどこにもacceptされていないので, 経過を見たいところ. (2020年12月現在でacceptされてないっぽいので, どこかに出してrejectされたかも.)

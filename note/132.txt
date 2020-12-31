@@ -1,4 +1,4 @@
-## 概要
+### 概要
 目的はセグメンテーションの向上.
 
 それを実現するために, セグメントした層を一定確率で削除し, 削除された物がreal dataであるかどうかをdiscriminatorに判断させることで, より自然な削除(つまりより自然なセグメント)ができるようになっていく.
@@ -9,7 +9,7 @@
 
 ![132_01](https://github.com/wataoka/papersheet2md/blob/main/images/132_01.png?raw=true)
 
-## アーキテクチャ
+### アーキテクチャ
 画像をエンコードし, K個のレイヤーでセグメントする. 一定確率pでcombineし, 1-pでcombineしない. そうして生成されが画像をDiscriminatorが識別することで, より自然に削除できるようになっていく.
 
 ![132_02](https://github.com/wataoka/papersheet2md/blob/main/images/132_02.png?raw=true)

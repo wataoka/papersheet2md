@@ -1,4 +1,4 @@
-## 概要
+### 概要
 - 背景
   - GANの潜在空間には多様な意味論が含まれている.
   - しかし, それを実画像編集に利用するのは難しい.
@@ -14,20 +14,20 @@
   - 安全な実画像の再構成
   - 編集タスクにおいて多様な画像を生成できる
 
-## 2 In-Domain GAN Inversion
+### 2 In-Domain GAN Inversion
 
 ![147_01](https://github.com/wataoka/papersheet2md/blob/main/images/147_01.png?raw=true)
 
 大体の訳)
 Fig.2. (a) 従来のエンコーダの学習とdomain guided encoder for GAN inversionの違い. 青色のブロックは訓練を行うモデル. 赤色の点線矢印は教師データからの監視を示している. 従来では, z→生成画像→z’だったが, 提案するdomain -guided encoderは実画像→e→再構成画像とする. (b) 従来の最適化と提案するドメイン正則化の最適化の比較. 訓練ずみdomain-guided encoderは最適化プロセスの中で意味論的ドメインに潜在コードを埋め込みための正則化として含まれる.
 
-## 2.1 Domain-Guided Encoder
+#### 2.1 Domain-Guided Encoder
 zをサンプルし, 画像を生成し, zを再構成するだけの従来手法とは以下の3つの点で異なる.
 1. 潜在空間での再構成ではなく, 画像空間でも再構成.
 2. 生成データではなく, 実データでの学習.
 3. 再構成データをrealにするためにDiscriminatorを使用する.
 
-## 2.2 Domain-Regularized Optimization
+#### 2.2 Domain-Regularized Optimization
 GANは潜在分布から画像分布への近似という分布レベルのものであるが, GAN inversionはインスタンスレベル. なので, エンコーダのみで逆変換を行うのには限界がある. それゆえ, 提案したdomain-guided encoderで推論した潜在コードをピクセルレベルで修正する必要がある.
 
 Fig.2.(b)で示している通り, 従来手法ではgeneratorのみに基づいた, 言わば自由な最適化が行われる. (xからどの意味論にするのかが結構自由という意味) なので, 割とドメイン外の潜在コードを推論してしまう可能性がある. 我々はdomain-guided encoderを用いてxから最適なzを求める. 理想的なスタート地点として, domain-guided encoderの出力を用いる. これによって, この後の最適化で局所解に陥ることを防ぐ. そしてdomain-guided encoderを正則化として用いる. これによって, 意味論のドメイン外の潜在コードを推論してしまうことを防ぐ. xが与えられた時に, zを推論する際の目的関数は以下である.
@@ -41,11 +41,11 @@ where FはVGGのような特徴量抽出用モデル.
 - 生成画像G(z)の特徴量とxの特徴量が近い.
 - 生成画像G(z)のエンコードが元のzからできるだけ離れない.
 
-## 結果
+### 結果
 顔属性変換, image interpolation, semantic diffusionタスクに適応させて, 従来手法よりよかった.
 
 
-## wataokaのコメント
+### wataokaのコメント
 "TensorFlowのコードもPyTorchのコードもある
 website: https://genforce.github.io/idinvert/
 interfaceganとLIAと同じgithubグループ"

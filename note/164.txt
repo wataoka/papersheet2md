@@ -1,4 +1,4 @@
-## 前提知識
+### 前提知識
 まず, ICA(独立成分分析)とは, 以下のような計算モデルを扱うものです. (線形の仮定をおいたversion)
 
 ```math
@@ -17,15 +17,15 @@ ICA手法の中ではFastICAなどが有名です. FastICAは「様々な分布�
 
 基本的にICAはxの次元とsの次元が同じである状況を扱いますが, sの次元の方がxの次元より多い状況を扱うものをOvercomplete ICA(過完備独立成分分析)と言います. 自明なことですが, 観測できる情報の方が少ないので, 通常のICAより難しいタスクとなります. 今回紹介する論文はOvercomplete ICAを解く方法を提案したものです..
 
-## 概要
+### 概要
 既存OICAの悪いところとして以下が挙げられます.
   - 独立成分の分布が非ガウスであるだろうという仮定が強い.
   - EMアルゴリズムにおいて独立成分の事後分布の推論にかかる計算コストが高い.
 
 LFOICAでは, 独立成分に分布の仮定をおかず, 勾配法でAを求めます.
 
-## 手法
-### General Framework
+### 手法
+#### General Framework
 
 ![164_01](https://github.com/wataoka/papersheet2md/blob/main/images/164_01.png?raw=true)
 
@@ -44,7 +44,7 @@ LFOICAでは, 独立成分に分布の仮定をおかず, 勾配法でAを求め
 4. それらのミニバッチで式(3)を最適化する
 5. 最大イテレーションに達するまで1-4を繰り返す. 
 
-### Practical Considerations
+### いろんな工夫
 #### Sparsity
 大体において混合行列Aはスパースになるので, 式(3)にLASSO正則化を加えた.
 LASSO正則化のsoft閾値として, stochastic proximal gradient method[Nitanda2014]を用いた.
@@ -53,7 +53,7 @@ LASSO正則化のsoft閾値として, stochastic proximal gradient method[Nitand
 データが十分に存在しない場合は独立成分に対してパラメトリックな仮定を置くのも有効.
 混合ガウス分布でモデル化し, reparameterization tricなどを上手く使って学習すれば良い.
 
-## 実験
+### 実験
 OICAの人工データを用いて実験を行なった. 下の表は推論した混合行列と真の混合行列との2乗和誤差(以下, MSE).
 
 ![164_03](https://github.com/wataoka/papersheet2md/blob/main/images/164_03.png?raw=true)
@@ -62,7 +62,7 @@ OICAは要素の順序の非決定性(permutation indeterminancy)とスケール
 - permutation indeterminancyを取り除くために, 独立成分の分布をそれぞれ異なるものにし, 推定後に正しい分布に並び替えてからMSEを計測した. (具体的には, 独立成分の分布をラプラス分布として, それぞれでvarianceを変えた.)
 - scaling indeterminancyを取り除くために, 真の行列と推定行列の最初の列のL2ノルムを1にする正規化を行なった.
 
-## wataokaのコメント
+### wataokaのコメント
 OICAほど抽象的で広範囲に適用できる問題に対して, ニューラルネットの力が遺憾無く発揮され, 人類の叡智がまた進んだ気がした. (絶対言い過ぎ) まぁとにかく, 読んでいた時に, 「おぉ。。こんなに大事な問題が2019年でもまだ先に進んでいるのか。。研究って面白いなぁ。。」と感動した.
 
 また, ここでは省略したが, OICAを解くことによって未観測共通原因を含む因果探索を行うことができる. そこへの適用も面白く, 自分の研究のためになった. (動画では解説する予定.)

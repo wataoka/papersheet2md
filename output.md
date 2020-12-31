@@ -12,7 +12,7 @@ wataokaの日本語訳「尤度が必要ない過完備ICAと
 - URL: [https://arxiv.org/abs/1909.01525](https://arxiv.org/abs/1909.01525)
 
 
-## 前提知識
+### 前提知識
 まず, ICA(独立成分分析)とは, 以下のような計算モデルを扱うものです. (線形の仮定をおいたversion)
 
 ```math
@@ -31,15 +31,15 @@ ICA手法の中ではFastICAなどが有名です. FastICAは「様々な分布�
 
 基本的にICAはxの次元とsの次元が同じである状況を扱いますが, sの次元の方がxの次元より多い状況を扱うものをOvercomplete ICA(過完備独立成分分析)と言います. 自明なことですが, 観測できる情報の方が少ないので, 通常のICAより難しいタスクとなります. 今回紹介する論文はOvercomplete ICAを解く方法を提案したものです..
 
-## 概要
+### 概要
 既存OICAの悪いところとして以下が挙げられます.
   - 独立成分の分布が非ガウスであるだろうという仮定が強い.
   - EMアルゴリズムにおいて独立成分の事後分布の推論にかかる計算コストが高い.
 
 LFOICAでは, 独立成分に分布の仮定をおかず, 勾配法でAを求めます.
 
-## 手法
-### General Framework
+### 手法
+#### General Framework
 
 ![164_01](https://github.com/wataoka/papersheet2md/blob/main/images/164_01.png?raw=true)
 
@@ -58,7 +58,7 @@ LFOICAでは, 独立成分に分布の仮定をおかず, 勾配法でAを求め
 4. それらのミニバッチで式(3)を最適化する
 5. 最大イテレーションに達するまで1-4を繰り返す. 
 
-### Practical Considerations
+### いろんな工夫
 #### Sparsity
 大体において混合行列Aはスパースになるので, 式(3)にLASSO正則化を加えた.
 LASSO正則化のsoft閾値として, stochastic proximal gradient method[Nitanda2014]を用いた.
@@ -67,7 +67,7 @@ LASSO正則化のsoft閾値として, stochastic proximal gradient method[Nitand
 データが十分に存在しない場合は独立成分に対してパラメトリックな仮定を置くのも有効.
 混合ガウス分布でモデル化し, reparameterization tricなどを上手く使って学習すれば良い.
 
-## 実験
+### 実験
 OICAの人工データを用いて実験を行なった. 下の表は推論した混合行列と真の混合行列との2乗和誤差(以下, MSE).
 
 ![164_03](https://github.com/wataoka/papersheet2md/blob/main/images/164_03.png?raw=true)
@@ -76,7 +76,7 @@ OICAは要素の順序の非決定性(permutation indeterminancy)とスケール
 - permutation indeterminancyを取り除くために, 独立成分の分布をそれぞれ異なるものにし, 推定後に正しい分布に並び替えてからMSEを計測した. (具体的には, 独立成分の分布をラプラス分布として, それぞれでvarianceを変えた.)
 - scaling indeterminancyを取り除くために, 真の行列と推定行列の最初の列のL2ノルムを1にする正規化を行なった.
 
-## wataokaのコメント
+### wataokaのコメント
 OICAほど抽象的で広範囲に適用できる問題に対して, ニューラルネットの力が遺憾無く発揮され, 人類の叡智がまた進んだ気がした. (絶対言い過ぎ) まぁとにかく, 読んでいた時に, 「おぉ。。こんなに大事な問題が2019年でもまだ先に進んでいるのか。。研究って面白いなぁ。。」と感動した.
 
 また, ここでは省略したが, OICAを解くことによって未観測共通原因を含む因果探索を行うことができる. そこへの適用も面白く, 自分の研究のためになった. (動画では解説する予定.)
@@ -90,12 +90,12 @@ wataokaの日本語訳「反実仮想公平性」
 - URL: [https://arxiv.org/abs/1703.06856](https://arxiv.org/abs/1703.06856)
 
 
-## 前提知識
+### 前提知識
 機械学習には公平性(以下, fairness)という分野があります. fairnessは機械学習による自動的な判断システムが特定のグループが不当な判断を行わないようにする分野です. 例えば, ローンの申請を認めるかどうかのシステムにおいて, 男性には優しく女性には厳しいなんてことがあれば大問題です. そのようなことに陥らないように, アルゴリズム側で正則化などをかけたり, データ自体に前処理を加えたり行います.
 
 Fairnessを語る上で「何を持って公平か」という公平性の定義は避けることができません. ここでは, 代表的な公平性の定義を2つ紹介します. (本当は10以上存在している.)
 
-### Demographic Parity
+#### Demographic Parity
 簡単のため二値分類とします.
 - $\hat{Y}$: 分類器の予測
 - $S$: センシティブ属性 (例:女性or男性)
@@ -107,7 +107,7 @@ P(\hat{Y}|S=0) = P(\hat{Y}|S=1)
 
 つまり, 予測分布がセンシティブ属性間において不変であるべきという定義です. もう少し簡単に言えば, 分類器が0と出力する確率も1と出力する確率もセンシティブ属性間において同じであるべきという定義です.
 
-### Equal Opportunity
+#### Equal Opportunity
 簡単のため二値分類とします.
 - $\hat{Y}$: 分類器の予測
 - $Y$: ラベル
@@ -122,16 +122,16 @@ P(\hat{Y}=1|Y=1,S=0) = P(\hat{Y}=1|Y=1,S=1)
 
 上記のように, 公平性の定義には様々なものが存在します. この論文では, 新しい公平性の定義`counterfactual fairness`を提案しました.
 
-## 概要
+### 概要
 - counterfactual fairnessを定義した.
 - counterfactual fairnessはindividual fairness
 - 実世界と反実世界(別のdemographicグループに属す世界)において決定が同じという直感を捉えている.
 - low schoolの実データにおいて提案するフレームワークが成功したことを示した.
 
-## 2 Background
+### 2 Background
 読むのめんどくさい方は3まで飛ばしてOK.
 
-### 2.2 Causal Models and Counterfactuals
+#### 2.2 Causal Models and Counterfactuals
 causal modelは次を満たす三つ組(U, V, F)
 - Vは観測変数集合
 - Uは潜在背景変数集合で, 他のどの変数にも引き起こされない.
@@ -152,7 +152,7 @@ Counterfactual inferenceは次の3step.
 2. Action: 構造方程式におけるZを介入値zに変更する. 変更後の方程式をFzとする.
 3. Prediction: Fzを用いて残りのVの値を計算する.
 
-## 3 Counterfactual Fairness
+### 3 Counterfactual Fairness
 - A: センシティブ属性
 - X: 残りの属性
 - Y: ラベル
@@ -166,10 +166,10 @@ Counterfactual inferenceは次の3step.
 #### Lemma 1.
 Gをmodel(U, V, F)の因果グラフとする. その時, Y^がAの非子孫から予測する関数であれば, Y^はcounterfactually fairである.
 
-## 4 Implementing Counterfactual Fairness
+### 4 Implementing Counterfactual Fairness
 Y^を因果グラフにおいてAの非子孫の関数に制限する.
 
-### 4.1 Algorithm
+#### 4.1 Algorithm
 AlgorithmはデータセットDと因果モデルMを受け取る.
 1. 各データ点に対して, m個のMCMCサンプルU1(i),...,Um(i) ~ P_M(U|x(i), a(i))をサンプルする.
 2. D’をaugmented dataとし, Dにおけるデータ点(a(i), x(i), y(i))をm個のデータ集合{(a(i), x(i), y(i), u(i)j)}に置き換える.
@@ -185,7 +185,7 @@ counterfactualな仮定はデータからfairな潜在ベクトルを抽出す�
 
 モデルMは与えられたUとpa_i間の関係に依存する経験損失によって学習することができる. 要するに, Mで学習される. Y^ではない.
 
-### 4.2 Designing the Input Causal Model
+#### 4.2 Designing the Input Causal Model
 
 完全な決定的モデルを指定する必要はなく, 構造方程式は条件付き分布として緩和できる.
 特に, counterfactual fairnessの概念は強さが増す3段階の仮定の下で保持される. (level3が最も強い仮定)
@@ -196,7 +196,7 @@ Level 2: 潜在背景変数は観測可能な変数の非決定的原因とし�
 
 Level 3: 潜在変数を持った完全に決定的モデルを仮定する. 例えば, 分布P(Vi | pa_i)は誤差モデルVi = fi(pa_i)+eiとして扱われる. 誤差項eiは観測変数から計算されたとしてY^への入力となる. これはfairな予測器Y^によって抽出された情報を最大化する.
 
-### 4.3 Further Considerations on Designing the Input Causal Model
+#### 4.3 Further Considerations on Designing the Input Causal Model
 例えば, counterfactual fairnessの定義は
 P(Y^=1 | do(A=a)) = P(Y^=1 | do(A=a’))
 とかだといけないのか？
@@ -204,7 +204,7 @@ P(Y^=1 | do(A=a)) = P(Y^=1 | do(A=a’))
 
 これは公平である保証がない. なぜならば, 半分の個人がnegativeな差別を受けていて, 半分の個人がpositiveな差別を受けていたとしても等式をみてしてしまうから.
 
-## 5 Illustration: Law School Success
+### 5 Illustration: Law School Success
 タスク: LSAT, GPAからFYAを予測する.
 - LSAT: 入学試験の成績
 - GPA: 入学前の成績
@@ -244,7 +244,7 @@ Fullモデルはsexをのぞいてcounfatectual fairnessが悪い.
 UnawareモデルもFullモデルよりマシだが大体同じ.
 なぜ, sexに対してモデルはfairになるのかを見るために, counterfactual dataを生み出すDAGの重みを見た. (male, female)からGPAへの重みは(0.93, 1.06)で(male, female)からLSATへの重みは(1.1, 1.1)となっていた. つまり, sexとGPA/LSATの間における因果関係が非常に弱いために, 単にsexとの関係では公平になっていた.
 
-## wataokaのコメント
+### wataokaのコメント
 Counterfactual fairnessの定義は非常に直感的で説得力のある定義だと感じます. そして, counterfactual fairnessの定義であるセンシティブ属性に対する介入がラベルに影響しないということは, 因果推論におけるセンシティブ属性のラベルに対する**因果効果**がないと言い換えることができます. センシティブ属性が因果的に結果と繋がっていないことは機械学習サービスを提供する側としては非常にユーザー側への力強い主張となるかと思います.
 
 やはり, counterfactual quantityを計測することが非常に困難であることがネックになるかと思います. どれほど識別可能であるのか, boundは取れるのかなどの理論的な解析は[Wu et al.の論文 ](https://www.ijcai.org/Proceedings/2019/199)を参照されたいです. 
@@ -258,7 +258,7 @@ wataokaの日本語訳「意味論的顔編集のためのGANの潜在空間の�
 - URL: [https://arxiv.org/abs/1907.10786](https://arxiv.org/abs/1907.10786)
 
 
-## 概要
+### 概要
 最新の画像編集手法です.
 
 ![126_01](https://github.com/wataoka/papersheet2md/blob/main/images/126_01.png?raw=true)
@@ -267,7 +267,7 @@ wataokaの日本語訳「意味論的顔編集のためのGANの潜在空間の�
 
 この研究では, 顔生成のためにGANの潜在空間にどのように異なる意味論がエンコードされているかを詳細に研究されています. よく訓練された生成モデルの潜在コードは線形変換後, disentangledされた表現を学習していることが知られています. その表現を利用するために部分空間射影を用いることで, entangledされた(もつれた)意味論を切り離し, 正確な顔属性のコントロールを行います. 性別, 年齢, 表情, メガネの有無などに加えて, GANが誤って生成した画像を修正することも可能となります. また, 顔生成を自然に学習することによって, disentangleされ, コントロールしやすい顔属性表現を獲得することができます.
 
-## Related Work
+### Related Work
 GAN Inversion (GANの逆変換)
 画像空間から潜在変数への逆写像をいるための手法のことをGAN Inversionと言います. [42], [43], [44] (論文中の参照番号をそのまま記載.)
 
@@ -281,7 +281,7 @@ GAN Inversion (GANの逆変換)
 - Zhuらはピクセルの値を復元することと共に, 意味論的情報も考慮に入れている. [55]
 (論文中の参照番号をそのまま記載.)
 
-## InterFaceGAN
+### InterFaceGAN
 - 与えられているもの
   - 画像
   - 画像に関する属性
@@ -327,7 +327,7 @@ Poseでは真横を向き, Smileでは爆笑したり,... とにかく面白い�
 
 ![126_05](https://github.com/wataoka/papersheet2md/blob/main/images/126_05.png?raw=true)
 
-## wataokaのコメント
+### wataokaのコメント
 Detecting Bias with Generative Counterfactual Face Attribut Augmentationの理論的かつ拡張的な論文で, 面白い結果から面白いGANに対する理解ができる面白い論文.
 
 実はwataokaはこの論文と完全に同じ手法を思いついており, コーディングも進めていた矢先に世に出てきた論文です. Conditional Manipulation, そしてConditional Manipulationの一般化まで完全に同じ式を導出していました. この論文を読んだ時, 血の気が引く思いもしましたが, 同時に自分以上に良い解析であり, 良い書き方であり, 良い論文だなと感服しました. この論文から多くのことを学びました. 隅から隅まで読み込み, 自分にないところを吸収しまくってやりました. そんな僕の研究生活の中で思い出に残るこの論文を第一位にさせていただきました. もちろんそんな私情を差し引いても非常に興味深い結果が多いかと思います.
@@ -343,7 +343,7 @@ wataokaの日本語訳「GANの潜在空間における解釈可能方向の教�
 - URL: [https://arxiv.org/abs/2002.03754](https://arxiv.org/abs/2002.03754)
 
 
-## 概要
+### 概要
 unsupervised editing. 背景削除の方向を見つけたらしい. sacliency detectionでSOTA.
 
 [1~K]のどれかkをone-hotエンコードし, ε倍する. (d×Kの行列A) * (ε倍されたK次元one-hotエンコードe)でε倍されたAの列を一つ取り出す. その列をzに足した奴がshift. zとz+A(εe)をreconstructor Rに入力し, kとεを予測. AとRの精度を上げることで, 見分けが追記やすいshiftになる.
@@ -362,8 +362,8 @@ Figure2.
 
 つまり, Aの列がwalkする方向に当たる.
 
-## 手法 (3. Method)
-### 3.2 Learning
+### 手法 (3. Method)
+#### 3.2 Learning
 - A: d×K行列
 - d: zの次元
 - K: 見つけたい方向の数. (これはハイパラであり, 次のsectionで議論している.)
@@ -381,7 +381,7 @@ kの損失はcross-entropy
 これにより, AはRが区別しやすい画像変換を引き起こす方向を学習することになる.
 結果, 人間においても解釈しやすい画像変換をしてくれるようになる.
 
-## 3.3 Practical details
+#### 3.3 Practical details
 #### Generator
 4章に書かれてる
 - Spectral Norm GAN for MNIST and AnimeFace
@@ -404,10 +404,10 @@ kの損失はcross-entropy
 - shift magnitude ε
   - U[-6, 6]
 
-## 実験
+### 実験
 MNIST, AnimeFace, Imagenet, CelebA-HQで実験した. saliency detectionでSOTA.
 
-## wataokaのコメント
+### wataokaのコメント
 code: https://github.com/anvoynov/GanLatentDiscovery, まだarXiv論文だがどこかにacceptされそう.
 ## 5本目の論文: PULSE: Self-Supervised Photo Upsampling via Latent Space Exploration of Generative Models
 
@@ -418,10 +418,10 @@ wataokaの日本語訳「PULSE: 生成モデルの潜在空間探索によるsel
 - URL: [https://arxiv.org/abs/2003.03808](https://arxiv.org/abs/2003.03808)
 
 
-## 概要
+### 概要
 高解像(HR)なし, 低解像(LR)のみで超解像(SR)を作成できるPULSEを提案.
 
-## 手法 (3. Method)
+### 手法 (3. Method)
 - LR:	低解像度画像
 - HR:	高解像度画像
 - SR:	超解像度画像
@@ -434,10 +434,12 @@ wataokaの日本語訳「PULSE: 生成モデルの潜在空間探索によるsel
 
 学習済みGはz→自然画像多様体というmapをしてくれるという仮定の下, ||DS(G(z)) - LR||を最小化するzを探索する. 勾配が得られるので勾配ベース. 探索の工夫としては, 超球面の表面上のみで探索を行う制約をかけてzの尤度をあげている.
 
-### 3.2 Latent Space Exporation
-理想としては,
-生成画像G(z)の集合が多様体Mを近似してくれていれば,
+#### 3.2 Latent Space Exporation
+理想としては, 生成画像G(z)の集合が多様体Mを近似してくれていれば, 
 
+```math
+||DS(G(z)) - I_{LR}|| \leq \epsilon
+```
 というzを見つけるだけでOK.
 
 しかし, G(z)∈Mとなる保証はない.
@@ -446,7 +448,9 @@ G(z)∈Mを保証するためには, 事前分布において高い確率のLの
 
 事前分布がガウス分布である場合, L2正則としている研究があるが, この正則はベクトルを0に向けて強制するもので, 高次元ガウシアンの質量の大部分は半径√dの球体の表面付近にある. これを回避するために, 事前分布をR^dのガウス分布ではなく√d S^(d-1)の一様分布とした. 
 
-## コメント
+### wataokaのコメント
+データセットバイアスが原因でちょっと炎上してた論文. 研究自体は面白い.
+
 website: http://pulse.cs.duke.edu/
 
 ## 6本目の論文: CausalVAE: Structured Causal Disentanglement in Variational Autoencoder
@@ -457,7 +461,7 @@ wataokaの日本語訳「因果VAE: VAEによる構造化因果のDisentanglemen
 - URL: [https://arxiv.org/abs/2004.08697](https://arxiv.org/abs/2004.08697)
 
 
-## 概要
+### 概要
 - 潜在変数へのdisentanglementはよく行われているが, 現実世界で意味論的な要素が独立しているとは限らない.
 - 独立の因子を因果因子に変換するためのcausal layersを持っているVAEを提案.
 - Causal VAEと呼ぶ.
@@ -469,7 +473,7 @@ wataokaの日本語訳「因果VAE: VAEによる構造化因果のDisentanglemen
   - CelebA
 - 結果, CausalVAEの因果表現は意味論的に解釈可能で, downstreamタスクに関していい結果だった.
 
-### 情報の流れ
+#### 情報の流れ
 - xはencoderで潜在変数εに変換される.
   - εは多変量正規分布の事前分布p(ε)を持っている.
 - εはcausal layerで因果表現zに変換される.
@@ -478,8 +482,8 @@ wataokaの日本語訳「因果VAE: VAEによる構造化因果のDisentanglemen
 - zはdecoderによってxに変換される.
 
 
-## 3. Method
-### 3.1 Causal Model
+### 3. Method
+#### 3.1 Causal Model
 xからεは普通にencoder
 
 εからzは, 以下のようなLinear Structural Equation modelsを仮定している.
@@ -488,7 +492,7 @@ xからεは普通にencoder
 zはn次元ベクトルで, それぞれが何らかの物理的な意味に対応している.
 Azがzの項でもあることから, ziとzjの因果関係なども記述していることがわかる.
 
-### 3.2 Generative Model
+#### 3.2 Generative Model
 モデルの教師なし学習は識別可能性問題によって不可能.
 ([1]で議論済み)
 
@@ -502,7 +506,7 @@ Azがzの項でもあることから, ziとzjの因果関係なども記述し�
   - 意味論を持つ潜在変数z
   - ノイズ潜在変数ε
 
-### 3.3 Training Method
+#### 3.3 Training Method
 相変わらずELBOを最適化する. (p(x|u)のELBO)
 
 因果隣接行列Aの最適化は, continuous constraint functionを使用.
@@ -517,8 +521,8 @@ AがDAGを形成する値である <=> H(A)=0
 ![103_04](https://github.com/wataoka/papersheet2md/blob/main/images/103_04.png?raw=true)
 
 
-## 5. Experimetns
-### 5.1 Dataset
+### 5. Experimetns
+#### 5.1 Dataset
 #### 5.1.1 Synthetic Data
 - Pendulum (振り子)
   - 3つのエンティティ
@@ -541,14 +545,14 @@ AがDAGを形成する値である <=> H(A)=0
 #### 5.1.2 Benchmark Dataset
 CelebA
 
-## 6 Experiments
+### 6 Experiments
 - 合成データとCelebAで実験した.
 - CausalVAEと既存のdisentangle手法と比較した.
 - 以下の点に重点を置いている.
   - アルゴリズムが解釈可能な表現を学習できているか
   - 潜在変数への介入の結果が因果系の理解と一致しているか
 
-### 6.1 Dataset, Baseliens & Metrics
+#### 6.1 Dataset, Baseliens & Metrics
 Metrics
 ![103_05](https://github.com/wataoka/papersheet2md/blob/main/images/103_05.png?raw=true)
 
@@ -560,7 +564,7 @@ Total Information Coefficient (TIC)
 
 MICはいろいろと分割して相互情報量が最大となる値を採用するmetric. (21世紀の相関)
 
-### 6.2 Intervention experiments
+#### 6.2 Intervention experiments
 何かしらのコンセプトと対応しているzを介入した結果, どんな画像を出力されるかを観測した. (振り子とCelebA)
 
 振り子に関してもCelebAに関しても, しっかりと介入できてることを画像を見せて示した.
@@ -568,8 +572,11 @@ MICはいろいろと分割して相互情報量が最大となる値を採用�
 因果行列Aの学習プロセスをヒートマップの流れで表現し, 真の因果行列に収束していっていることを示した.
 ![103_06](https://github.com/wataoka/papersheet2md/blob/main/images/103_06.png?raw=true)
 
-## reference
+### reference
 [1] Challenging common assumptions ¨ in the unsupervised learning of disentangled representations.
+
+### wataokaのコメント
+潜在変数で因果探索を行うところは良いと思うが, 介入の方法については微妙？定性的評価の時点で少し所望の動きができていないところがある. 現時点でどこにもacceptされていないので, 経過を見たいところ. (2020年12月現在でacceptされてないっぽいので, どこかに出してrejectされたかも.)
 
 ## 7本目の論文: Progressive Growing of GANs for Improved Quality, Stability, and Variation
 
@@ -579,7 +586,7 @@ wataokaの日本語訳「質, 安定性, 多様性を向上させるためのPG-
 - URL: [https://arxiv.org/abs/1710.10196](https://arxiv.org/abs/1710.10196)
 
 
-## 概要
+### 概要
 - 画像などの解像度が高くなると生成分布のランダム要素が強くなるので, 学習が不安定になる. そこでPGGANを提案した.
 - PG-GANは低解像度の画像から始めて, ネットワークにレイヤーを徐々に追加して解像度を上げていくGAN.
 
@@ -647,6 +654,10 @@ pixel毎に正規化してる感じが影響の強い信号を軽減させてる
 - 最低解像度16x17での分布距離は大まかな画像構造の類似性を表し,
 - 高解像度での分布距離はエッジやノイズの鮮明さなどピクセルレベルでの情報の類似性を表す.
 
+## wataokaのコメント
+GANの進化の中でも非常に重要な論文. 高解像な画像の生成に初めて成功したと言っていい. この先に, StyleGANやBigGANへと受け継がれていく.
+
+実際に手を動かして学習させてみたが, 非常にハイクオリティに生成できた. しかしまだやはり, 多様性の乏しさなどが見受けられた.
 ## 8本目の論文: Discovering Causal Signals in Images
 
 wataokaの日本語訳「画像における因果信号の発見」
@@ -656,7 +667,7 @@ wataokaの日本語訳「画像における因果信号の発見」
 - URL: [https://arxiv.org/abs/1605.08179](https://arxiv.org/abs/1605.08179)
 
 
-## 概要
+### 概要
 現実世界ではcar→wheelという出現関係があり, 画像に現れると仮定している. そのようなcausal dispositionを明らかにするような方法を提案した.
 
 この論文は画像内に現れるオブジェクトカテゴリの”causal dispositions”を明らかにする観測可能なfootprintが存在することを示す.
@@ -666,7 +677,7 @@ wataokaの日本語訳「画像における因果信号の発見」
 - ステップ2
     - 画像の中からobject featuresとcontext featuresを見分ける分類器を使用.
 
-## 1. Introduction
+### 1. Introduction
 
 featuresについて
 - causal features
@@ -696,7 +707,7 @@ featuresについて
 object featuresとanticausal featuresの間には観測可能な統計的依存が存在する.
 context featuresとcausal featuresの間には観測可能な統計的依存がないor非常に弱い,.
 
-## 手法
+### 手法
 画像からobjectとcontextに分離, それぞれをcausal featureなのかanticausalなのかに二値分類.
 
 ## 9本目の論文: Visual Causal Feature Learning
@@ -725,7 +736,7 @@ Causal Coarsening Theorem (CCT)を証明。CCTは最小限の実験的努力か�
 manipulator関数を学習する方法を示す. manipulator関数は自動的に視覚的因果においてoptimal manipulationsを実行してくれる.
 
 ### 2. A Theory of visual causal features
-2.2 Generative Models: from micro to macro variables
+#### 2.2 Generative Models: from micro to macro variables
 Definition 1 (Observational Partition, Observational Class)
 振る舞いTに関する集合Iのobservational partition Π_o(T, I) (⊂I)は,
 i~j <=> P(T|I=i)=P(T|I=j)
@@ -743,6 +754,7 @@ visual manipulationは操作man(I=i)である.
 という等価関係に基づく分割である.
 
 ### スライド
+下記スライドが非常にわかりやすかった.
 https://www.slideshare.net/KojinOshiba/visutl-causal-feature-learning
 
 目的: 人間の視覚的な因果を理解すること
@@ -763,11 +775,11 @@ wataokaの日本語訳「GANを用いた因果公平性の達成」
 - URL: [https://pdfs.semanticscholar.org/1846/bb80fbd235bcf3316b5ffb09a6d3e22ebeab.pdf](https://pdfs.semanticscholar.org/1846/bb80fbd235bcf3316b5ffb09a6d3e22ebeab.pdf)
 
 
-## 概要
+### 概要
 
 CausalGAN [Kocaoglu, 2018]の拡張, Causal Fairness-aware GAN(CFGAN)を提案. 与えられた因果関係グラフに基づいて様々な因果関係の公平性を確保しながら分布を学習できる.
 
-## 2. Preliminaly
+### 2. Preliminaly
 
 #### 因果モデル
 causal model [Pearl, 2009]とは次のような三つ組みM={U, V, F}
@@ -782,9 +794,9 @@ causal model [Pearl, 2009]とは次のような三つ組みM={U, V, F}
 - indirect dicrimination
 - counterfactual fairness
 
-## 3. CFGAN
+### 3. CFGAN
 
-### 3.1 Problem Statement
+#### 3.1 Problem Statement
 - 変数
   - V = {X, Y, S}
     - S: センシティブ属性
@@ -797,7 +809,7 @@ causal model [Pearl, 2009]とは次のような三つ組みM={U, V, F}
   - read dataの全ての属性の分布を保護した新しいデータ(x^, y^, s^)を生成する.
   - 様々なcausalベースの基準において, 生成されたデータS^がY^に差別的な影響を与えない.
 
-### 3.2 Model Framework
+#### 3.2 Model Framework
 CFGANは以下を持っている.
   - 2つのgenerator (G1, G2)
   - 2つのdiscriminator (D1, D2)
@@ -822,7 +834,7 @@ CFGANは以下を持っている.
 
 ![99_01](https://github.com/wataoka/papersheet2md/blob/main/images/99_01.png?raw=true)
 
-## CFGAN for Counterfactual Fairness
+### CFGAN for Counterfactual Fairness
 
 - オリジナルの因果モデルと介入因果モデルとのコネクションを考慮する必要がある.
 - このコネクションを反映するために,  G1によって生成されたサンプルとG2によって生成されたサンプルの直接的依存関係を構築する.
@@ -840,11 +852,11 @@ wataokaの日本語訳「個人介入効果の推定: 汎化誤差とアルゴ�
 - URL: [https://arxiv.org/abs/1606.03976](https://arxiv.org/abs/1606.03976)
 
 
-## 概要
+### 概要
 TARNetを提案. ITE(個人介入効果)を推定する. さらに, 介入分布とコントロール分布の距離と汎化誤差を用い, 推定されたITEの誤差のboundをとった.
 
-## 3. Estimating ITE: Error bounds
-### 3.1 Problem setup
+### 3. Estimating ITE: Error bounds
+#### 3.1 Problem setup
 representation関数Φ: X→Rとする. (R: representation space)
 
 #### Assumption 1.
@@ -857,7 +869,10 @@ representationΦはtreated distributionやcontrol distributionから空間Rへ�
 #### Definition 1.
 
 ![95_01](https://github.com/wataoka/papersheet2md/blob/main/images/95_01.png?raw=true)
-p^{t=0}_{Φ} (r) := p_{Φ} (r|t=0)
+
+```math
+p^{t=0}_{\phi} (r) := p_{\phi} (r|t=0)
+```
 
 とする. (the treated and control distributions induced over R)
  
@@ -874,18 +889,18 @@ wataokaの日本語訳「Gender Slopes: 属性編集を用いた画像モデル�
 - URL: [https://arxiv.org/abs/2005.10430](https://arxiv.org/abs/2005.10430)
 
 
-## 概要
+### 概要
 - 他の属性を固定し, 人種や性別などの属性を変化させた画像を生成するためのオートエンコーダーを提案した.
 - そのオートエンコーダーを用いて商用に公開されている画像認識器のcounterfactual fairnessを測定した.
 
-## 手法 Counterfactual Data Symthesis
-### Problem Formulation
+### 手法 Counterfactual Data Symthesis
+#### Problem Formulation
 - Y: 予測器
 - x: 画像
 - Y(x) = {True, False}
 - A: sensitive attribute (binary)
 
-### Face Attribute Synthesis
+#### Face Attribute Synthesis
 - Denton2019の方法とは違って, この論文ではFaderNetworkを使用した.
   - 理由: GANの潜在空間は容易にentangleされているので, 明示的にdisentangleしているモデルを使用した方がいいと考えたから.
 - FaderNetworkは以下のようなモデル.
@@ -901,7 +916,7 @@ wataokaの日本語訳「Gender Slopes: 属性編集を用いた画像モデル�
   - センシティブ属性aと相関性のありそうな属性もセンシティブ属性と同じように敵対的学習で明にE(x)から分離して調節できるようにし, aを編集する時に固定した.
      - aをE(x)から分離する時点でこの操作はいらない気もするが, データセットバイアスに対処するために明示的に行ったらしい.
 
-## Experiments
+### Experiments
 Computer Vision APIs
 以下のAPIを調べた
 - Google Vision API
@@ -909,7 +924,7 @@ Computer Vision APIs
 - IBM Watson Visual Recognition
 - Clarifai
 
-### Occupational Images
+#### Occupational Images
 職業に関するデータセットを作成した
 - Bureau of Labor Statisticsから129の職種リストを入手
 - Google Image検索でそれらの職業を検索し, ダウンロード.
@@ -927,7 +942,7 @@ Computer Vision APIs
   - CelebAは白人の顔が多いので人種操作モデルには適していない.
 - 人種操作モデルにはCelebA+検索とかいろいろ頑張って画像と属性を集めた.
 
-## Results
+### Results
 - Gender Slope
   - aの範囲を(-2, 2)として, 7分割し, それらをclassifierに入力する.
   - aがある値a’を取ったとすると,a’である画像サンプル複数に対してpositiveと出力する確率を算出.
@@ -947,7 +962,7 @@ wataokaの日本語訳「CausalGAN: 敵対的学習を用いた明示的な因�
 - URL: [https://arxiv.org/abs/1709.02023](https://arxiv.org/abs/1709.02023)
 
 
-## 概要
+### 概要
 - 因果グラフがgivenの時の因果を含んだ生成モデルの学習
 - 生成アーキテクチャがgivenの因果グラフと一致しているなら, 敵対的学習は真の観測分布と介入分布の生成モデルを学習することに使えることを示した.
 - 顔の属性情報が与えられた時, そんな顔を生成できる.
@@ -957,16 +972,16 @@ wataokaの日本語訳「CausalGAN: 敵対的学習を用いた明示的な因�
 
 ![97_01](https://github.com/wataoka/papersheet2md/blob/main/images/97_01.png?raw=true)
 
-## 4 Causal Implicit Generative Models
+### 4 Causal Implicit Generative Models
 Implicit generative model[28]は明示的なパラメータなしに, 分布からサンプリングすることに使われる.  (GANがその成功例) しかし, 介入分布からのサンプリングはできない. Causal Implicit Generative Modelはそれができる.
 
 因果グラフが与えられており, それぞれに対応する構造方程式をニューラルネットで近似するだけ.
 
-## 5 Causal Generative Adversarial Networks
-### 5.1 Causal Implicit Generative Model for Binary Labels
+### 5 Causal Generative Adversarial Networks
+#### 5.1 Causal Implicit Generative Model for Binary Labels
 Causal Controllerはラベル集合において条件付けしたり介入したときに画像がどの分布からサンプルされるかをコントロールするためにある. 4章で説明済み.
 
-### 5.2 CausalGAN Archtecture
+#### 5.2 CausalGAN Archtecture
 最適化されたgeneratorは画像分布で条件づけられたラベルを出力する.
 Causal Controllerは事前学習済みで, アップデートしない.
 
@@ -978,7 +993,7 @@ Generatorを最適化する際, 3つの目的がある.
 - Labelerに正しく分類されようとすることで, L_G通りの画像を生成する.
 - Anti-Labelerを騙すようにすることで, ラベリングしやすい非現実的な画像分布になることを避ける.
 
-手法のまとめ
+### 手法のまとめ
 - 構造方程式を近似
   - 因果グラフはgiven
   - f_{x_i}の部分はニューラルネット
@@ -994,8 +1009,8 @@ Generatorを最適化する際, 3つの目的がある.
   - Labeler: 実画像から属性を推定.
   - Anti-Labeler: 生成画像から属性を推定.
 
-# 8 Result
-## 8.1 Dependence of GAN Behavior on Causal Graph
+###  8 Result
+#### 8.1 Dependence of GAN Behavior on Causal Graph
 以下の3つのどれか1つからサンプルされたデータに対してのcausal implicit generative modelの収束を調べた.
 - “line”: X→Y→Z
 - “collider”: X→Y←Z
@@ -1014,14 +1029,14 @@ FC系は因果グラフがわかっていない比較用のgenerator.
 
 ![97_02](https://github.com/wataoka/papersheet2md/blob/main/images/97_02.png?raw=true)
 
-## 8.2 Wasserstein Causal Controller on CalabA Labels
+#### 8.2 Wasserstein Causal Controller on CalabA Labels
 実験で用いたWasserstein Causal Controllerはノイズを連続一様分布からサンプルしているが, 出力のラベルはほとんどが0か1付近に存在しているので, ほぼほぼ離散分布として機能してくれた.
 
 Causal Graph毎にどのようにtotal variational distanceが収束していくかを観測した.
 
 ![97_03](https://github.com/wataoka/papersheet2md/blob/main/images/97_03.png?raw=true)
 
-8.3 CausalGAN Results
+#### 8.3 CausalGAN Results
 条件付き分布と介入分布の違いを確認した.
 - 髭で条件付けした時, 髭の男しか生成されない
 - 髭で介入した時, 髭の男も髭の女も生成された.
@@ -1035,7 +1050,7 @@ wataokaの日本語訳「行列部分空間射影を用いた潜在空間分解�
 - URL: [https://arxiv.org/abs/1907.12385](https://arxiv.org/abs/1907.12385)
 
 
-## 概要
+### 概要
 - オートエンコーダーの潜在空間をdisentanglingし, 1つの属性だけを変化させる手法Matrix Subspace Projection (MSP)を提案.
 - MSPのいいところ
   - MSPは既存手法よりシンプル.
@@ -1045,7 +1060,7 @@ wataokaの日本語訳「行列部分空間射影を用いた潜在空間分解�
   - 画像やテキストなど多様なドメインに適応可能.
 - 異なるドメインで実験を行い, 人間による評価と自動的な評価を行い, ベースラインよりよかった.
 
-## 1. Introduction
+### 1. Introduction
 提案手法は以下の2つを特徴を持つ
 - ランダムシード(しかし属性はあり)からサンプルが生成される.
 - ある特定の属性と入力サンプルを与えると, 入力サンプルのその属性を修正することができる.
@@ -1055,11 +1070,11 @@ Contributions
 - 複数属性に対して精度のいいdisentanglementを可能にした.
 - コードを公開している.
 
-## 2. Related Work
+### 2. Related Work
 潜在ベクトルから特定の属性情報を分離する問題としてよく用いられる方法は, zの属性を予測するネットワークを用いて, 敵対的学習を行い, 特定の情報を消去し, 所望の属性のみにする方法. この手法の欠点は, 再構成誤差とトレードオフになっており, 学習率のスケーリングが大変であること.
 
-## 3. Method
-### 3.1. Problem Formulation
+### 3. Method
+#### 3.1. Problem Formulation
 D: データセット
 x: 画像 (n次元)
 y: 属性 (k次元)
@@ -1076,24 +1091,24 @@ zの属性がynに変わるように置換した結果をznとすると,
 	xn = G(K(z, yn))
 結果得られた画像xnの属性はyでなくynであると予測されるようになるが, それ以外の情報は保存されている.
 
-### 3.2. Learning Disentangled Latent Representations via Matrix Subspace Projection
+#### 3.2. Learning Disentangled Latent Representations via Matrix Subspace Projection
 潜在変数zとinvertibleな任意の関数が与えられた時, 
-Hはzを新しい線形空間に飛ばしてくれる. (z^=H(z))
+Hはzを新しい線形空間に飛ばしてくれる. ($\hat{z}$=H(z))
 
 どのような線形空間かというと, 以下の(a)と(b)を満たす.
-    (a) z^に行列Mをかけることでyに近づけることができる線形空間.
+    (a) $\hat{z}$に行列Mをかけることでyに近づけることができる線形空間.
     (b) 直交行列U = [M, N]が存在する.
-ただし, NはMの零空間で, Nz^はy以外の情報(s^とする)となる.
+ただし, NはMの零空間で, N$\hat{z}$はy以外の情報($\hat{s}$とする)となる.
 
-要するにHはzからy, zからs^への変換において, ラスト一歩手前まで持っていった感じ.
-あとは行列で線形変換すればyとかsになれるよというギリギリのz^まで持っていくのがH.
+要するにHはzからy, zから$\hat{s}$への変換において, ラスト一歩手前まで持っていった感じ.
+あとは行列で線形変換すればyとかsになれるよというギリギリの$\hat{z}$まで持っていくのがH.
 
 invertibleなHを省くことで, GとFにHの機能を学習させると考えることができる.
 Mに関しては直交行列の一部である必要があるため, GとFにMの機能を学習させることはできない.
 
 Mを最適化するために以下をする必要がある.
-- y^をyに近づける.
-- s^がz^からの情報を持たないようにするためにs^のノルムを小さくする.
+- $\hat{y}$をyに近づける.
+- $\hat{s}$が$\hat{z}$からの情報を持たないようにするために$\hat{s}$のノルムを小さくする.
 
 ![140_01](https://github.com/wataoka/papersheet2md/blob/main/images/140_01.png?raw=true)
 
@@ -1106,17 +1121,17 @@ L2に関しては次のように式変形することで計算可能にする.
 
 なので,
 
-Fを用いてxからz^が得られ,
-Uを用いてz^から[y^;s^]が得られる.
+Fを用いてxから$\hat{z}$が得られ,
+Uを用いて$\hat{z}$から[$\hat{y}$;$\hat{s}$]が得られる.
 
 そして,
 
-[y^;s^]を[yn;s^]に置き換えて, 
+[$\hat{y}$;$\hat{s}$]を[yn;$\hat{s}$]に置き換えて, 
 Uの逆行列(Uの転置)を用いてznが得られ,
 Gを用いてznからxnが得られる.
 
-## 4. Evaluation
-### 4.1. Matrix Subspace Projection in VAE
+### 4. Evaluation
+#### 4.1. Matrix Subspace Projection in VAE
 vanilla VAEに適用した. 
 また, 生成画像をシャープにするためにadditional PatchGANを使用した.
 
@@ -1147,7 +1162,7 @@ Fader netやattGANではメガネに対する編集に失敗し, MSPは成功し
 
 結果としては「MSPを入れた時クオリティが最も悪い」という帰無仮説はp<0.03で棄却された.
 
-### 4.3 Evaluation of Disentanglement
+#### 4.3 Evaluation of Disentanglement
 Amazon Mechanical Turkを用いて手動ラベリングを行った.
 3つのレベルのリッカート尺度(perfect, recognisable, andunrecognisable/unchanged)で属性変換が成功しているかどうかを参加者に評価してもらった.
 
@@ -1159,6 +1174,9 @@ Amazon Mechanical Turkを用いて手動ラベリングを行った.
 
 所望の属性は最も動き, それと相関性のある属性が最も動かなかったので, MSPが最もdisentangleできていると結論づけている.
 
+### wataokaのコメント
+非常に読んでいて楽しかった. ベスト3に載せるか迷ったほど. 実際には計算する必要のない架空の行列Nを理論上の計算でこねくり回して, 結局は行列Mに関する最適化だけでいいよって流れがとても面白い. ただし, 無情報化するためにのノルム0とし, そうすることでdisentangleの達成というのは, 必要条件しか満たしていなさそうな気がする.
+
 ## 15本目の論文: Avoiding Discrimination through Causal Reasoning
 
 wataokaの日本語訳「因果関係を用いた差別の回避」
@@ -1168,7 +1186,7 @@ wataokaの日本語訳「因果関係を用いた差別の回避」
 - URL: [https://arxiv.org/abs/1706.02744](https://arxiv.org/abs/1706.02744)
 
 
-## 概要
+### 概要
 fairnessの評価指標はだいたい予測, センシティブ属性, アウトカムに依存したjoint distributionにのみ依存している.
 
 因果推論の視点は「正しい公平性の指標は何か」から「因果データ生成プロセスにどんなモデルを仮定するか？」にシフトさせる.
@@ -1178,7 +1196,7 @@ fairnessの評価指標はだいたい予測, センシティブ属性, アウ�
 - 今まで無視されてきた微妙なことを明らかにし, それが根本的な問題であることを示した.
 - 差別を回避するための因果基準の公平性を定義し, それらを満たすアルゴリズムを提案する.
 
-## 2. Unresolved discrimination and limitations of observational criterion
+### 2. Unresolved discrimination and limitations of observational criterion
 resolving variable: 差別的な影響をAから受けていない変数
 unresolving variable: 差別的な影響をAから受けている変数
 
@@ -1193,7 +1211,7 @@ resolving variableを特定できているセンシティブ属性A, ラベルY,
 ベイズ最適な制約なし分類器もしくはベイズ最適なequal oddsを満たした分類器がunsolved discriminationを示すかどうかを決定できる評価指標は存在しない.
 
 
-## 3. Proxy discrimination and interventions
+### 3. Proxy discrimination and interventions
 Definition 2. (Potential proxy discrimination)
 次を満たす時, 因果グラフにおける変数Vはpotential proxy discriminationを示す.
 - proxyからブロックされないAからVへのダイレクトパスが存在する.
@@ -1213,15 +1231,15 @@ wataokaの日本語訳「隠れ変数のある線形非ガウス因果モデル�
 - URL: [https://189568f5-a-62cb3a1a-s-sites.googlegroups.com/site/sshimizu06/ijar07.pdf?attachauth=ANoY7cpqDtq0TkopTBeV1UYzz2oXubY2uiu6V-FC8ZnvVB8ek_mwcJX3-Is8a0a_SzkgNKcxnRNrYI7j6nQn5bljXUp502hDKP9dAZJq4qZnHeYMwWUAko1Bt5z2coxAghulrT1ic-PFyDRTWNIikZyrA69pkpt0St2XOF0SA_t72skyVRceUvUvp9v38AxG2j7kQx-dQqWF8vQKNHJSFl-vjvSmWPFfBg%3D%3D&attredirects=0](https://189568f5-a-62cb3a1a-s-sites.googlegroups.com/site/sshimizu06/ijar07.pdf?attachauth=ANoY7cpqDtq0TkopTBeV1UYzz2oXubY2uiu6V-FC8ZnvVB8ek_mwcJX3-Is8a0a_SzkgNKcxnRNrYI7j6nQn5bljXUp502hDKP9dAZJq4qZnHeYMwWUAko1Bt5z2coxAghulrT1ic-PFyDRTWNIikZyrA69pkpt0St2XOF0SA_t72skyVRceUvUvp9v38AxG2j7kQx-dQqWF8vQKNHJSFl-vjvSmWPFfBg%3D%3D&attredirects=0)
 
 
-## 概要
+### 概要
 - LvLiNGAMを提案.
 - LvLiNGAMは隠れ変数(未観測共通原因)が存在していても因果推論が可能なモデル.
   - 混合行列に線形性を仮定.
   - 外生変数の分布に非ガウスを仮定.
 - 数値シミュレーションを行い, コードも公開している.
 
-## 2 Two observed variables
-### 2.3 Exploiting non-Gaussianity
+### 2 Two observed variables
+#### 2.3 Exploiting non-Gaussianity
 忠実性を仮定すると, 行列Aさえ推定できれば6つのモデルは識別可能. Aに関してはICAの理論を適用することができる. 共通原因がない場合は独立変数の数と観測変数の数が同じであり, ‘easy case’である. 共通原因がある場合は’overcomplete basis’ ICA(不完全基底ICA)の困難なケースである. ただし, 行列Aは十分なデータがあれば識別可能であることが証明されている. (実用的な推定方法については4章で議論している.)
 
 ![151_01](https://github.com/wataoka/papersheet2md/blob/main/images/151_01.png?raw=true)
@@ -1230,8 +1248,8 @@ wataokaの日本語訳「隠れ変数のある線形非ガウス因果モデル�
 共通原因が複数あったとしても, 因果グラフの構造は正しく識別することができる.
 しかし, パラメータに関しては, 共通原因がN_hあるとすると, N_h + 1通りの異なる解が存在する. 理由としては外生変数の割り当て, 交絡因子の割り当ての選択に起因している.
 
-## 3 The general case
-### 3.2 Canonical models
+### 3 The general case
+#### 3.2 Canonical models
 Figure2(a)のx7
 観測変数から影響を受けていて, 誰にも影響を与えないような潜在変数は検知不可能であるが, 「観測変数間の因果関係を明らかにしたい」という目的の上では検知する必要がないので問題ではない.
 
@@ -1247,7 +1265,7 @@ Canonical model (正準モデル)の定義:
 
 任意のlatent variable LiNGAMモデルを入力とし, それのCanonical modelを出力するアルゴリズムも提案している. Algorithm A
 
-### 3.3 Model estimation in the Gaussian framework
+#### 3.3 Model estimation in the Gaussian framework
 この節では, related worksのように関連する話題を出している.
 
 外生変数にGaussを仮定した場合
@@ -1257,18 +1275,22 @@ Canonical model (正準モデル)の定義:
 
 非ガウス性を利用することでモデルを区別する能力を大幅に向上できるのに...という話
 
-### 3.4 Model estimation based on non-Gaussianity
+#### 3.4 Model estimation based on non-Gaussianity
 任意の忠実なlatent variable LiNGAMモデルによって生成されたデータから生成モデルと観測的に等価な正準モデルのセットを推定する方法を示す.
 
 x~をfull data vectorとする.
 変数を中心化すると, 次のように書ける.
-x~ = B~x~ + e
+$\hat{x}$ = $\hat{B}$$\hat{x}$ + e
 	(DAGの過程をおいているので)
-また, 因果順序k(i)を知っているなら, B~は厳密な下三角行列に並び替えることができる.
+また, 因果順序k(i)を知っているなら, $\hat{B}$は厳密な下三角行列に並び替えることができる.
 
-x~について解くと,
-	x~ = A~e
-	A~ = (I - B^)^-1
+$\hat{x}$について解くと,
+
+```math
+	\hat{x} = \hat{A}e
+	\hat{A} = (I - \hat{B})^{-1}
+```
+
 となる.
 A~もまた(厳密ではないが)下三角行列に並び替えることができる.
 これは標準線形ICAの枠組みで解くことができる.
@@ -1283,11 +1305,14 @@ overcomplete basis Aと観測された変数の平均が与えられた時, 基�
 - NhはAの列数から行数から引いたもの.
 - Aの列それぞれを観測変数の外生変数と潜在変数の外生変数に属するものとして分類する.
   - 潜在変数として選択されたものが最初に来るようにAを並び替える.
-  - 行列Aの上部にfig3aのようにゼロを拡張されることで, 推定行列A~を得る.
-  - A~をlower三角形に並び替えできるかどうかを検定する. できなければ次の分類に進む. (for文でいうcontinue)
-  - B~ (=I-A~^-1)を計算する.
+  - 行列Aの上部にfig3aのようにゼロを拡張されることで, 推定行列$\hat{A}$を得る.
+  - $\hat{A}$をlower三角形に並び替えできるかどうかを検定する. できなければ次の分類に進む. (for文でいうcontinue)
+  - $\hat{B}$ (=I-$\hat{A}~{-1}$)を計算する.
   - Bのネットワークが忠実性の仮定に適合していることを確認する. そうでない場合は次の分類に進む. (for文でいうcontinue)
-  - データを生成した可能性のある観測的に等価なモデルのリストにB~を追加する.
+  - データを生成した可能性のある観測的に等価なモデルのリストに$\hat{B}$を追加する.
+
+### wataokaのコメント
+未観測共通原因を扱う因果探索はLvLiNGAMの他のも多く存在しているが, 未観測共通原因の値まで推定する手法はほとんど存在しない.  OvercompleteICAの枠組みに落とし込んだ後, 行列の推定のためにEMアルゴリズムを用いることがあるが, 非常に計算量が高いため, 高次元では使い物にならない. 2019年にLFOICAというディープラーニングを用いた手法が提案されているので, そちらを用いればなんとかいける.
 
 ## 17本目の論文: ParceLiNGAM: A causal ordering method rubust against latent confounders
 
@@ -1299,14 +1324,14 @@ wataokaの日本語訳「ParceLiNGAM: 潜在交絡に対してロバストな因
 
 
 ### 概要
-- 潜在交絡因子が存在しないという仮定を取っ払ったLiNGAMを提案.
+- 潜在交絡因子が存在しないという仮定を取っ払ったLiNGAMであるParceLiNGAMを提案.
 - Key ideaは外生変数間の独立性をテストすることで潜在交絡因子を検知し, 潜在交絡因子によって影響を受けていない変数集合(parcels)を見つけるということ.
 - 人工データと脳画像データで実験を行った.
 
 xjと全てのiに対する残差r(j)iが独立である=xjはsource変数という性質とその逆を用いて, source変数とsink変数を排除していくアルゴリズムをベースとして, それが解けない状況にもrobustな改良もしている. 出力はcausal order matrix
 
 ### 3 A method robust against latent confounders
-3.1 Identification of causal orders of variables that are not affected by latent confounders
+#### 3.1 Identification of causal orders of variables that are not affected by latent confounders
 
 ```math
 x = Bx + Λf + e (3)
@@ -1320,6 +1345,9 @@ x = Bx + Λf + e (3)
 #### Lemma 2
 Lemma 1の逆. 全部と依存してたらsink変数だよ的な定理.
 
+### wataokaのコメント
+潜在行楽因子は存在するが, その値までは推定しない手法.
+
 ## 18本目の論文: In-Domain GAN Inversion for Real Image Editing
 
 wataokaの日本語訳「実画像編集のためのIn-Domain GAN Inversion」
@@ -1329,7 +1357,7 @@ wataokaの日本語訳「実画像編集のためのIn-Domain GAN Inversion」
 - URL: [https://arxiv.org/abs/2004.00049](https://arxiv.org/abs/2004.00049)
 
 
-## 概要
+### 概要
 - 背景
   - GANの潜在空間には多様な意味論が含まれている.
   - しかし, それを実画像編集に利用するのは難しい.
@@ -1345,20 +1373,20 @@ wataokaの日本語訳「実画像編集のためのIn-Domain GAN Inversion」
   - 安全な実画像の再構成
   - 編集タスクにおいて多様な画像を生成できる
 
-## 2 In-Domain GAN Inversion
+### 2 In-Domain GAN Inversion
 
 ![147_01](https://github.com/wataoka/papersheet2md/blob/main/images/147_01.png?raw=true)
 
 大体の訳)
 Fig.2. (a) 従来のエンコーダの学習とdomain guided encoder for GAN inversionの違い. 青色のブロックは訓練を行うモデル. 赤色の点線矢印は教師データからの監視を示している. 従来では, z→生成画像→z’だったが, 提案するdomain -guided encoderは実画像→e→再構成画像とする. (b) 従来の最適化と提案するドメイン正則化の最適化の比較. 訓練ずみdomain-guided encoderは最適化プロセスの中で意味論的ドメインに潜在コードを埋め込みための正則化として含まれる.
 
-## 2.1 Domain-Guided Encoder
+#### 2.1 Domain-Guided Encoder
 zをサンプルし, 画像を生成し, zを再構成するだけの従来手法とは以下の3つの点で異なる.
 1. 潜在空間での再構成ではなく, 画像空間でも再構成.
 2. 生成データではなく, 実データでの学習.
 3. 再構成データをrealにするためにDiscriminatorを使用する.
 
-## 2.2 Domain-Regularized Optimization
+#### 2.2 Domain-Regularized Optimization
 GANは潜在分布から画像分布への近似という分布レベルのものであるが, GAN inversionはインスタンスレベル. なので, エンコーダのみで逆変換を行うのには限界がある. それゆえ, 提案したdomain-guided encoderで推論した潜在コードをピクセルレベルで修正する必要がある.
 
 Fig.2.(b)で示している通り, 従来手法ではgeneratorのみに基づいた, 言わば自由な最適化が行われる. (xからどの意味論にするのかが結構自由という意味) なので, 割とドメイン外の潜在コードを推論してしまう可能性がある. 我々はdomain-guided encoderを用いてxから最適なzを求める. 理想的なスタート地点として, domain-guided encoderの出力を用いる. これによって, この後の最適化で局所解に陥ることを防ぐ. そしてdomain-guided encoderを正則化として用いる. これによって, 意味論のドメイン外の潜在コードを推論してしまうことを防ぐ. xが与えられた時に, zを推論する際の目的関数は以下である.
@@ -1372,11 +1400,11 @@ where FはVGGのような特徴量抽出用モデル.
 - 生成画像G(z)の特徴量とxの特徴量が近い.
 - 生成画像G(z)のエンコードが元のzからできるだけ離れない.
 
-## 結果
+### 結果
 顔属性変換, image interpolation, semantic diffusionタスクに適応させて, 従来手法よりよかった.
 
 
-## wataokaのコメント
+### wataokaのコメント
 "TensorFlowのコードもPyTorchのコードもある
 website: https://genforce.github.io/idinvert/
 interfaceganとLIAと同じgithubグループ"
@@ -1389,7 +1417,7 @@ wataokaの日本語訳「FACE: 実現可能で実用可能な反実仮想説明�
 - URL: [https://arxiv.org/abs/1909.09369](https://arxiv.org/abs/1909.09369)
 
 
-## 概要
+### 概要
 - 反実仮想生成の欠点その1
   - 反実仮想生成における現在のSOTAはrepresentativeではない.
   - つまり, そのSOTAシステムを使用すると, 非現実的なアドバイスをされる.
@@ -1404,15 +1432,15 @@ wataokaの日本語訳「FACE: 実現可能で実用可能な反実仮想説明�
   - FACEを提案.
   - 重み付き最短経路問題に基づいたfeasible pathを計算するアルゴリズム.
 
-## Introduction
+### Introduction
 どんなタスク？
 タスクはCounterfactual Explanations
 「なぜローンの申請に失敗したのか？」という疑問に対して「なになにをするべきだった」と返してくれるもの.
 
-## 手法
+### 手法
 他のサンプルが近くに存在する経路を通りながら別クラスの領域に移動させていくことで, 不自然な変換を行わないようにしている.
 
-## 結果
+### 結果
  人工トイデータとMNISTで実験した. 0→8への変換の時, 0でも8でもない画像が生まれない.
 
 ## 20本目の論文: Controlling generative models with continuous factors of variations
@@ -1424,11 +1452,11 @@ wataokaの日本語訳「変動の連続的な要因による生成モデルの�
 - URL: [https://arxiv.org/abs/2001.10238](https://arxiv.org/abs/2001.10238)
 
 
-## 概要
+### 概要
 semi-supervised editing. 鳥とかきのことかを編集している. pixel-wiseな損失では高周波成分をうまく再構成できていないと怒っていた.
 
-## 2 LATENT SPACE DIRECTIONS OF A FACTOR OF VARIATION
-### 2.1 Latent Space Trajectories of an Image Transformation
+### 2 LATENT SPACE DIRECTIONS OF A FACTOR OF VARIATION
+#### 2.1 Latent Space Trajectories of an Image Transformation
 G: 潜在空間→画像空間
 Tt: 画像空間→画像空間 (parametrized by t)
 I = なんかの画像とした時,
@@ -1478,6 +1506,9 @@ Encoderを学習すればできることだがそうはしない.
 
 ![127_05](https://github.com/wataoka/papersheet2md/blob/main/images/127_05.png?raw=true)
 
+### wataokaのコメント
+問題への仮説→改善案という綺麗な研究な気がした. もちろん理論的に証明し切って改善案の提案とかの方がかっこいいが, 現在のディープラーニングに対する理解の推し進め方はこの論文のような形が多く, 理論屋より実験屋が突っ走ったいっときの航空力学の世界を彷彿とさせる.
+
 ## 21本目の論文: Counterfactual Image Network
 
 wataokaの日本語訳「反実画像ネットワーク」
@@ -1487,7 +1518,7 @@ wataokaの日本語訳「反実画像ネットワーク」
 - URL: [https://openreview.net/pdf?id=SyYYPdg0-](https://openreview.net/pdf?id=SyYYPdg0-)
 
 
-## 概要
+### 概要
 目的はセグメンテーションの向上.
 
 それを実現するために, セグメントした層を一定確率で削除し, 削除された物がreal dataであるかどうかをdiscriminatorに判断させることで, より自然な削除(つまりより自然なセグメント)ができるようになっていく.
@@ -1498,7 +1529,7 @@ wataokaの日本語訳「反実画像ネットワーク」
 
 ![132_01](https://github.com/wataoka/papersheet2md/blob/main/images/132_01.png?raw=true)
 
-## アーキテクチャ
+### アーキテクチャ
 画像をエンコードし, K個のレイヤーでセグメントする. 一定確率pでcombineし, 1-pでcombineしない. そうして生成されが画像をDiscriminatorが識別することで, より自然に削除できるようになっていく.
 
 ![132_02](https://github.com/wataoka/papersheet2md/blob/main/images/132_02.png?raw=true)
@@ -1517,10 +1548,10 @@ wataokaの日本語訳「GANの「操縦性」について」
 - URL: [https://openreview.net/pdf?id=HylsTT4FvB](https://openreview.net/pdf?id=HylsTT4FvB)
 
 
-## 概要
+### 概要
 semi-supervised editing手法. GANはデータセットバイアス(e.g.物体が中心にくる)に影響されているが, 潜在空間で「steering」することで, 現実的な画像を作成しながら分布を移動することができる.
 
-## 1 Introduction
+### 1 Introduction
 #### main findings
 - GANの潜在空間の中でのsimple walkで, 出力画像空間におけるカメラモーションや色変換などを可能にする. そのsimple walkは属性ラベルやラベルやソース画像とターゲット画像のラベル無しで学習できる.
 - 線形walkは非線形walkと同様に効果的. モデルを明示的に学習しなくてもそうなるようになってる.
@@ -1528,13 +1559,13 @@ semi-supervised editing手法. GANはデータセットバイアス(e.g.物体�
 - 変換は汎用フレームワーク. BigGAN, StyleGAN, DCGANなどで行える.
 - 歩行軌跡の訓練により, 操縦性を向上させる.
 
-## 2 Related work
+### 2 Related work
 Applications of latent space editing
 - Denton, 2019:	顔属性検出器のバイアス測定
 - Shenet, 2019:	潜在空間のdisentanglementの可視化
 - この論文:	データセットバイアス測定
 
-## 3 Method
+### 3 Method
 目標: Figure 2のように, 潜在空間内を移動することで, 出力空間内の変換を実現する
 
 この目標は入力空間における変換が出力空間における等価変換をもたらすという等変量における考え方だと捉えることができる. (c.f. Hinton(2011), Cohen(2019), Lenc&Vedaldi(2015))
@@ -1547,8 +1578,8 @@ edit(G(z), α)は, 例えば生成画像G(z)をα倍ズームしたものとか.
 - edit(G(z), α)が計算可能ということはそのような画像を作れること自体に価値はない.
 - なので, steerabilityの評価からデータセットバイアスにつなげている.
 
-## 4 Experiments
-### 4.1 What Image Transformatinos can we achieve in latent space?
+### 4 Experiments
+#### 4.1 What Image Transformatinos can we achieve in latent space?
 walkさせた時に2つの失敗を観測した.
 - unrealisticになってしまう.
 - 所望のtransformが全然できていない
@@ -1561,6 +1592,16 @@ ImageNetのデータセットにある画像に限界があるからではない
 興味深いことに, walkがoutputに影響を与える量は画像のclassに依存していた. 
 (クラゲは様々な色に変化ができたが, goldfinch(黄色の鳥)はできなかった)
 (噴火する火山は明るさを変えられたが, アルプスは変えられなかった)
+
+### wataokaのコメント
+GANの操縦性というキャッチーな言い方がとても好き.
+
+これは自分の勝手な妄想だが,
+- GANの潜在変数をいじって編集したい！
+- 考えた！
+- しかしこれ編集自体に価値ないよな... zoomとかできるし...
+- よし, この技術でデータセットバイアス測ろう！ちょっとうまくいかんやつもあるし！
+みたいな研究の流れなんじゃね？と思っている. もしそうだとしたら, 逃げ方がうますぎる. これはディスっているのではなく, 研究における発表の仕方, ひいてはプロモーションの仕方は言い方次第でとても変わることを学べた. 自分も何かを発表したい時は完璧な言い方を一度は模索しようと思う.
 
 ## 23本目の論文: GANalyze: Toward Visual Definitions of Cognitive Image Properties
 
@@ -1575,15 +1616,15 @@ wataokaの日本語訳「GANalyze: 認知的画像特性の視覚的定義に向
 
 Figure1: GANalyzeで作成した可視化. 中央の列は, 元の種となる生成された画像を表している. 元画像は関心のある特性（記憶力, 美的感覚, 情緒的価値）によって, より特徴的な(右)かより特徴的でない(左)かを判断するように修正されている. 画像のそれぞれの特性のスコアは左上隅に表示されている.
 
-## 概要
+### 概要
 - 記憶力、美学、感情的価値などの認知特性を研究するためのフレームワークを提案.
 - GANの潜在変数を記憶性を高める方向にナビゲートすることで, 生成された特定の画像が記憶に残りやすくなったり, 記憶に残らなくなったりするためには, どのように見えるかを可視化することができる. 
 - 結果として得られる「視覚的定義」には, 記憶性の根底にあるかもしれない画像の特性（「物体の大きさ」など）が表面化されている.
 - 本研究では, 行動実験を通じて我々の手法が人間の記憶力に影響を与える画像操作を実際に発見できることを検証する. 
 - さらに, 同じフレームワークを用いて, 画像の美学や情緒的価値観の分析が可能であることを実証する.
 
-## 2 手法 (Model)
-### 2.1 Formulation
+### 2 手法 (Model)
+#### 2.1 Formulation
 目的: 任意のクラスyの任意のノイズベクトルzを変換し, その結果生成された画像の記憶性がある量αだけ増加（または減少）するように学習することである.
 
 A: Assessor (評価関数): 生成画像→属性値
@@ -1601,10 +1642,12 @@ A: Assessor (評価関数): 生成画像→属性値
 ### MemNet
 memorabilityを予測してくれるCNN.
 
-## 結果
+### 結果
 画像の記憶性が物体の大きさとして表面化したことを示した.
 
-## wataokaのコメント
+### wataokaのコメント
+発想というか, 学習結果の解釈がキャッチーで見習うべきことかと思う. しかしMemNetのことを信頼しすぎてる感もある.
+
 website: http://ganalyze.csail.mit.edu/
 ## 24本目の論文: Disparate Interactions: An Algorithm-in-the-Loop Analysis of Fiarness in Risk Assessments
 
@@ -2924,7 +2967,7 @@ mode collapseが起きている時, 異常に(画像空間での距離)/(潜在�
 
 code: https://github.com/HelenMao/MSGAN
 
-## 終わりに
+# 終わりに
 この記事をご覧くださったあなたへ
 
 一文字でも読んでいただき誠にありがとうございました. あなたにとって2020年はどのような1年だったでしょうか. 私は来年から社会人になりますので, 言わば学生最後の1年間を過ごしました. もしかすると, もう二度とアカデミアな機関で自分の好奇心のもと研究を行うことができないかもしれないと思い, 悔いの残らないように毎日を過ごしました. 指導教官の方とアイディアを出し合い盛り上がれる最高に楽しい時間も経験しましたし, 結果が出せない苦しい数ヶ月間も経験しました. そのような日々の中で私は学べる楽しさを一度も忘れることはありませんでした. 世界中の研究者が長い間考え抜いた研究を数時間で脳にインストールできるこの世の中は僕にとって最高の遊び場のようでした. 上記の通りたくさんの論文を読み, たくさんのコードを書きました. そんな中で私はこう思います. 「2020年もきっと人類は前に進んだ.」 地球上をパンデミックが襲おうとも人類は前を向いていると確信しています. 来たる2021年も私は世界中の皆さんと共に未来を作りたいと思っています. 来年もどうぞよろしくお願いいたします. それでは, 良いお年を.

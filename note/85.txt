@@ -1,9 +1,9 @@
-## 前提知識
+### 前提知識
 機械学習には公平性(以下, fairness)という分野があります. fairnessは機械学習による自動的な判断システムが特定のグループが不当な判断を行わないようにする分野です. 例えば, ローンの申請を認めるかどうかのシステムにおいて, 男性には優しく女性には厳しいなんてことがあれば大問題です. そのようなことに陥らないように, アルゴリズム側で正則化などをかけたり, データ自体に前処理を加えたり行います.
 
 Fairnessを語る上で「何を持って公平か」という公平性の定義は避けることができません. ここでは, 代表的な公平性の定義を2つ紹介します. (本当は10以上存在している.)
 
-### Demographic Parity
+#### Demographic Parity
 簡単のため二値分類とします.
 - $\hat{Y}$: 分類器の予測
 - $S$: センシティブ属性 (例:女性or男性)
@@ -15,7 +15,7 @@ P(\hat{Y}|S=0) = P(\hat{Y}|S=1)
 
 つまり, 予測分布がセンシティブ属性間において不変であるべきという定義です. もう少し簡単に言えば, 分類器が0と出力する確率も1と出力する確率もセンシティブ属性間において同じであるべきという定義です.
 
-### Equal Opportunity
+#### Equal Opportunity
 簡単のため二値分類とします.
 - $\hat{Y}$: 分類器の予測
 - $Y$: ラベル
@@ -30,16 +30,16 @@ P(\hat{Y}=1|Y=1,S=0) = P(\hat{Y}=1|Y=1,S=1)
 
 上記のように, 公平性の定義には様々なものが存在します. この論文では, 新しい公平性の定義`counterfactual fairness`を提案しました.
 
-## 概要
+### 概要
 - counterfactual fairnessを定義した.
 - counterfactual fairnessはindividual fairness
 - 実世界と反実世界(別のdemographicグループに属す世界)において決定が同じという直感を捉えている.
 - low schoolの実データにおいて提案するフレームワークが成功したことを示した.
 
-## 2 Background
+### 2 Background
 読むのめんどくさい方は3まで飛ばしてOK.
 
-### 2.2 Causal Models and Counterfactuals
+#### 2.2 Causal Models and Counterfactuals
 causal modelは次を満たす三つ組(U, V, F)
 - Vは観測変数集合
 - Uは潜在背景変数集合で, 他のどの変数にも引き起こされない.
@@ -60,7 +60,7 @@ Counterfactual inferenceは次の3step.
 2. Action: 構造方程式におけるZを介入値zに変更する. 変更後の方程式をFzとする.
 3. Prediction: Fzを用いて残りのVの値を計算する.
 
-## 3 Counterfactual Fairness
+### 3 Counterfactual Fairness
 - A: センシティブ属性
 - X: 残りの属性
 - Y: ラベル
@@ -74,10 +74,10 @@ Counterfactual inferenceは次の3step.
 #### Lemma 1.
 Gをmodel(U, V, F)の因果グラフとする. その時, Y^がAの非子孫から予測する関数であれば, Y^はcounterfactually fairである.
 
-## 4 Implementing Counterfactual Fairness
+### 4 Implementing Counterfactual Fairness
 Y^を因果グラフにおいてAの非子孫の関数に制限する.
 
-### 4.1 Algorithm
+#### 4.1 Algorithm
 AlgorithmはデータセットDと因果モデルMを受け取る.
 1. 各データ点に対して, m個のMCMCサンプルU1(i),...,Um(i) ~ P_M(U|x(i), a(i))をサンプルする.
 2. D’をaugmented dataとし, Dにおけるデータ点(a(i), x(i), y(i))をm個のデータ集合{(a(i), x(i), y(i), u(i)j)}に置き換える.
@@ -93,7 +93,7 @@ counterfactualな仮定はデータからfairな潜在ベクトルを抽出す�
 
 モデルMは与えられたUとpa_i間の関係に依存する経験損失によって学習することができる. 要するに, Mで学習される. Y^ではない.
 
-### 4.2 Designing the Input Causal Model
+#### 4.2 Designing the Input Causal Model
 
 完全な決定的モデルを指定する必要はなく, 構造方程式は条件付き分布として緩和できる.
 特に, counterfactual fairnessの概念は強さが増す3段階の仮定の下で保持される. (level3が最も強い仮定)
@@ -104,7 +104,7 @@ Level 2: 潜在背景変数は観測可能な変数の非決定的原因とし�
 
 Level 3: 潜在変数を持った完全に決定的モデルを仮定する. 例えば, 分布P(Vi | pa_i)は誤差モデルVi = fi(pa_i)+eiとして扱われる. 誤差項eiは観測変数から計算されたとしてY^への入力となる. これはfairな予測器Y^によって抽出された情報を最大化する.
 
-### 4.3 Further Considerations on Designing the Input Causal Model
+#### 4.3 Further Considerations on Designing the Input Causal Model
 例えば, counterfactual fairnessの定義は
 P(Y^=1 | do(A=a)) = P(Y^=1 | do(A=a’))
 とかだといけないのか？
@@ -112,7 +112,7 @@ P(Y^=1 | do(A=a)) = P(Y^=1 | do(A=a’))
 
 これは公平である保証がない. なぜならば, 半分の個人がnegativeな差別を受けていて, 半分の個人がpositiveな差別を受けていたとしても等式をみてしてしまうから.
 
-## 5 Illustration: Law School Success
+### 5 Illustration: Law School Success
 タスク: LSAT, GPAからFYAを予測する.
 - LSAT: 入学試験の成績
 - GPA: 入学前の成績
@@ -152,7 +152,7 @@ Fullモデルはsexをのぞいてcounfatectual fairnessが悪い.
 UnawareモデルもFullモデルよりマシだが大体同じ.
 なぜ, sexに対してモデルはfairになるのかを見るために, counterfactual dataを生み出すDAGの重みを見た. (male, female)からGPAへの重みは(0.93, 1.06)で(male, female)からLSATへの重みは(1.1, 1.1)となっていた. つまり, sexとGPA/LSATの間における因果関係が非常に弱いために, 単にsexとの関係では公平になっていた.
 
-## wataokaのコメント
+### wataokaのコメント
 Counterfactual fairnessの定義は非常に直感的で説得力のある定義だと感じます. そして, counterfactual fairnessの定義であるセンシティブ属性に対する介入がラベルに影響しないということは, 因果推論におけるセンシティブ属性のラベルに対する**因果効果**がないと言い換えることができます. センシティブ属性が因果的に結果と繋がっていないことは機械学習サービスを提供する側としては非常にユーザー側への力強い主張となるかと思います.
 
 やはり, counterfactual quantityを計測することが非常に困難であることがネックになるかと思います. どれほど識別可能であるのか, boundは取れるのかなどの理論的な解析は[Wu et al.の論文 ](https://www.ijcai.org/Proceedings/2019/199)を参照されたいです. 

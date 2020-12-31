@@ -1,8 +1,8 @@
-## 概要
+### 概要
 TARNetを提案. ITE(個人介入効果)を推定する. さらに, 介入分布とコントロール分布の距離と汎化誤差を用い, 推定されたITEの誤差のboundをとった.
 
-## 3. Estimating ITE: Error bounds
-### 3.1 Problem setup
+### 3. Estimating ITE: Error bounds
+#### 3.1 Problem setup
 representation関数Φ: X→Rとする. (R: representation space)
 
 #### Assumption 1.
@@ -15,7 +15,10 @@ representationΦはtreated distributionやcontrol distributionから空間Rへ�
 #### Definition 1.
 
 ![95_01](https://github.com/wataoka/papersheet2md/blob/main/images/95_01.png?raw=true)
-p^{t=0}_{Φ} (r) := p_{Φ} (r|t=0)
+
+```math
+p^{t=0}_{\phi} (r) := p_{\phi} (r|t=0)
+```
 
 とする. (the treated and control distributions induced over R)
  
